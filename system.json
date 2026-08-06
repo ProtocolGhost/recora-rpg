@@ -13,6 +13,6 @@
   "esmodules": ["recora-rpg.js"],
   "styles": ["css/recora-rpg.css"],
   "url": "",
-  "manifest": "",
-  "download": ""
+  "manifest": "https://raw.githubusercontent.com/ProtocolGhost/recora-rpg/main/system.json",
+  "download": "https://github.com/ProtocolGhost/recora-rpg/archive/refs/heads/main.zip"
 }
