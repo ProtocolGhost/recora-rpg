@@ -1,0 +1,363 @@
+<form class="{{cssClass}}" autocomplete="off" style="height: 100%; display: flex; flex-direction: column;">
+  
+  <!-- CSS GLOBAL DA FICHA -->
+  <style>
+    /* Regras para as Abas funcionarem perfeitamente */
+    .sheet-body .tab { display: none; }
+    .sheet-body .tab.active { display: block; }
+
+    /* Forca setas nativas dos 3 spinners principais no Chromium do Foundry */
+    .recora-native-spinner {
+      appearance: auto !important;
+      -webkit-appearance: auto !important;
+      -moz-appearance: auto !important;
+      padding-right: 18px !important;
+    }
+
+    .recora-native-spinner::-webkit-outer-spin-button,
+    .recora-native-spinner::-webkit-inner-spin-button {
+      -webkit-appearance: inner-spin-button !important;
+      appearance: auto !important;
+      opacity: 1 !important;
+      display: block !important;
+      margin: 0 !important;
+      pointer-events: auto !important;
+      height: auto !important;
+    }
+  </style>
+
+  <div style="padding: 10px; background: #fff; font-family: sans-serif; color: #333; height: 100%; box-sizing: border-box; display: flex; flex-direction: column;">
+
+    <!-- CABEÇALHO (Fixo) -->
+    <header style="display: flex; gap: 20px; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #ccc; padding-bottom: 15px; flex-shrink: 0;">
+      <img src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="100" width="100" style="border: 2px solid #555; border-radius: 10px; cursor: pointer;" />
+      <div style="flex: 1;">
+        <input name="name" type="text" value="{{actor.name}}" placeholder="Nome do Personagem" style="width: 100%; font-size: 24px; font-weight: bold; border: none; border-bottom: 1px dashed #aaa; background: transparent; margin-bottom: 5px;" />
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+          <label style="font-weight: bold; font-size: 16px;">Persona:</label>
+          <input name="system.persona" type="text" value="{{system.persona}}" placeholder="Sua Persona aqui" style="flex: 1; height: 30px; font-size: 14px; padding: 0 5px;" />
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVEGAÇÃO DE ABAS -->
+    <nav class="sheet-tabs tabs" data-group="primary" style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #aaa; padding-bottom: 5px; flex-shrink: 0;">
+      <!-- A classe 'active' aqui garante que esse botão comece aceso -->
+      <a class="item active" data-tab="principal" style="font-weight: bold; font-size: 16px; cursor: pointer; padding: 5px 15px; background: #e3f2fd; border: 1px solid #90caf9; border-radius: 5px 5px 0 0;">Principal</a>
+      <a class="item" data-tab="inventario" style="font-weight: bold; font-size: 16px; cursor: pointer; padding: 5px 15px; background: #fff3e0; border: 1px solid #ffcc80; border-radius: 5px 5px 0 0;">Inventário</a>
+      <a class="item" data-tab="cronicas" style="font-weight: bold; font-size: 16px; cursor: pointer; padding: 5px 15px; background: #e8f5e9; border: 1px solid #81c784; border-radius: 5px 5px 0 0;">Crônicas</a>
+    </nav>
+
+    <!-- CORPO DA FICHA (Com Scroll) -->
+    <section class="sheet-body" style="flex: 1; overflow-y: auto; padding-right: 5px;">
+
+      <!-- ABA: PRINCIPAL (Adicionado class "active" para começar visível) -->
+      <div class="tab active" data-group="primary" data-tab="principal">
+        <!-- ALUCI -->
+        <fieldset style="margin-bottom: 20px; padding: 15px; border: 1px solid #aaa; border-radius: 5px;">
+          <legend style="font-weight: bold; font-size: 16px;">ALUCI</legend>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; text-align: center;">
+
+            <!-- ÁGAPE -->
+            <div style="background: #fff9c4; border: 1px solid #fbc02d; padding: 8px; border-radius: 4px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Ágape</label>
+              <select name="system.attributes.agape.value" style="width: 100%; margin-bottom: 10px; text-align: center; border: 1px solid #ccc;">
+                {{selectOptions diceOptions selected=system.attributes.agape.value}}
+              </select>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <label style="font-size: 13px; color: #555; font-weight: bold;">Energia:</label>
+                {{#if @root.isGM}}
+                <input name="system.attributes.agape.energia" type="number" value="{{system.attributes.agape.energia}}" min="0" step="1" style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #fff; padding: 3px 0; font-weight: bold; color: #333;" />
+                {{else}}
+                <input type="number" value="{{system.attributes.agape.energia}}" readonly style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #eee; padding: 3px 0; font-weight: bold; color: #333; cursor: not-allowed;" />
+                {{/if}}
+              </div>
+              <button type="button" class="roll-attribute" data-roll="{{system.attributes.agape.value}}" data-name="Ágape" data-key="agape" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-weight: bold;">Tensionar</button>
+              <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <button type="button" class="aliviar-attribute" data-key="agape" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Aliviar</button>
+                <button type="button" class="zerar-attribute" data-name="Ágape" data-key="agape" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Zerar</button>
+              </div>
+            </div>
+
+            <!-- LOGOS -->
+            <div style="background: #e3f2fd; border: 1px solid #42a5f5; padding: 8px; border-radius: 4px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Logos</label>
+              <select name="system.attributes.logos.value" style="width: 100%; margin-bottom: 10px; text-align: center; border: 1px solid #ccc;">
+                {{selectOptions diceOptions selected=system.attributes.logos.value}}
+              </select>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <label style="font-size: 13px; color: #555; font-weight: bold;">Energia:</label>
+                {{#if @root.isGM}}
+                <input name="system.attributes.logos.energia" type="number" value="{{system.attributes.logos.energia}}" min="0" step="1" style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #fff; padding: 3px 0; font-weight: bold; color: #333;" />
+                {{else}}
+                <input type="number" value="{{system.attributes.logos.energia}}" readonly style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #eee; padding: 3px 0; font-weight: bold; color: #333; cursor: not-allowed;" />
+                {{/if}}
+              </div>
+              <button type="button" class="roll-attribute" data-roll="{{system.attributes.logos.value}}" data-name="Logos" data-key="logos" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-weight: bold;">Tensionar</button>
+              <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <button type="button" class="aliviar-attribute" data-key="logos" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Aliviar</button>
+                <button type="button" class="zerar-attribute" data-name="Logos" data-key="logos" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Zerar</button>
+              </div>
+            </div>
+
+            <!-- UMBRA -->
+            <div style="background: #f3e5f5; border: 1px solid #ab47bc; padding: 8px; border-radius: 4px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Umbra</label>
+              <select name="system.attributes.umbra.value" style="width: 100%; margin-bottom: 10px; text-align: center; border: 1px solid #ccc;">
+                {{selectOptions diceOptions selected=system.attributes.umbra.value}}
+              </select>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <label style="font-size: 13px; color: #555; font-weight: bold;">Energia:</label>
+                {{#if @root.isGM}}
+                <input name="system.attributes.umbra.energia" type="number" value="{{system.attributes.umbra.energia}}" min="0" step="1" style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #fff; padding: 3px 0; font-weight: bold; color: #333;" />
+                {{else}}
+                <input type="number" value="{{system.attributes.umbra.energia}}" readonly style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #eee; padding: 3px 0; font-weight: bold; color: #333; cursor: not-allowed;" />
+                {{/if}}
+              </div>
+              <button type="button" class="roll-attribute" data-roll="{{system.attributes.umbra.value}}" data-name="Umbra" data-key="umbra" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-weight: bold;">Tensionar</button>
+              <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <button type="button" class="aliviar-attribute" data-key="umbra" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Aliviar</button>
+                <button type="button" class="zerar-attribute" data-name="Umbra" data-key="umbra" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Zerar</button>
+              </div>
+            </div>
+
+            <!-- CALMA -->
+            <div style="background: #e8f5e9; border: 1px solid #66bb6a; padding: 8px; border-radius: 4px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Calma</label>
+              <select name="system.attributes.calma.value" style="width: 100%; margin-bottom: 10px; text-align: center; border: 1px solid #ccc;">
+                {{selectOptions diceOptions selected=system.attributes.calma.value}}
+              </select>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <label style="font-size: 13px; color: #555; font-weight: bold;">Energia:</label>
+                {{#if @root.isGM}}
+                <input name="system.attributes.calma.energia" type="number" value="{{system.attributes.calma.energia}}" min="0" step="1" style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #fff; padding: 3px 0; font-weight: bold; color: #333;" />
+                {{else}}
+                <input type="number" value="{{system.attributes.calma.energia}}" readonly style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #eee; padding: 3px 0; font-weight: bold; color: #333; cursor: not-allowed;" />
+                {{/if}}
+              </div>
+              <button type="button" class="roll-attribute" data-roll="{{system.attributes.calma.value}}" data-name="Calma" data-key="calma" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-weight: bold;">Tensionar</button>
+              <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <button type="button" class="aliviar-attribute" data-key="calma" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Aliviar</button>
+                <button type="button" class="zerar-attribute" data-name="Calma" data-key="calma" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Zerar</button>
+              </div>
+            </div>
+
+            <!-- ÍMPETO -->
+            <div style="background: #ffebee; border: 1px solid #ef5350; padding: 8px; border-radius: 4px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Ímpeto</label>
+              <select name="system.attributes.impeto.value" style="width: 100%; margin-bottom: 10px; text-align: center; border: 1px solid #ccc;">
+                {{selectOptions diceOptions selected=system.attributes.impeto.value}}
+              </select>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <label style="font-size: 13px; color: #555; font-weight: bold;">Energia:</label>
+                {{#if @root.isGM}}
+                <input name="system.attributes.impeto.energia" type="number" value="{{system.attributes.impeto.energia}}" min="0" step="1" style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #fff; padding: 3px 0; font-weight: bold; color: #333;" />
+                {{else}}
+                <input type="number" value="{{system.attributes.impeto.energia}}" readonly style="width: 50%; text-align: center; border: 1px solid #ccc; border-radius: 3px; background: #eee; padding: 3px 0; font-weight: bold; color: #333; cursor: not-allowed;" />
+                {{/if}}
+              </div>
+              <button type="button" class="roll-attribute" data-roll="{{system.attributes.impeto.value}}" data-name="Ímpeto" data-key="impeto" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-weight: bold;">Tensionar</button>
+              <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <button type="button" class="aliviar-attribute" data-key="impeto" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Aliviar</button>
+                <button type="button" class="zerar-attribute" data-name="Ímpeto" data-key="impeto" style="cursor: pointer; width: 100%; background: rgba(255,255,255,0.6); border: 1px solid #ccc; font-size: 12px; padding: 2px;">Zerar</button>
+              </div>
+            </div>
+
+          </div>
+        </fieldset>
+
+        <!-- ANIMA -->
+        <fieldset style="margin-bottom: 20px; padding: 15px; border: 1px solid #aaa; border-radius: 5px;">
+          <legend style="font-weight: bold; font-size: 16px;">Anima</legend>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 100px; margin: 15px 0;">
+
+            <table class="mana-grid" style="width: auto; text-align: center; border-collapse: collapse;">
+              <tr>
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r1c1.value}}</span></td>
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r1c2.value}}</span></td>
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r1c3.value}}</span></td>
+              </tr>
+              <tr>
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r2c1.value}}</span></td>
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r2c2.value}}</span></td>
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r2c3.value}}</span></td>
+              </tr>
+              <tr>
+                {{#if showSlot7}}
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r3c1.value}}</span></td>
+                {{/if}}
+                {{#if showSlot8}}
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r3c2.value}}</span></td>
+                {{/if}}
+                {{#if showSlot9}}
+                <td class="anima-cell" style="width: 50px; height: 50px; border: 2px solid #333; font-size: 24px; font-weight: bold;"><span>{{system.manaGrid.r3c3.value}}</span></td>
+                {{/if}}
+              </tr>
+            </table>
+
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+              <button type="button" class="add-ferida" style="background: #e53935; color: white; border: 1px solid #b71c1c; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 150px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"><i class="fas fa-tint"></i> + Ferida</button>
+              <button type="button" class="heal-ferida" style="background: #43a047; color: white; border: 1px solid #2e7d32; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 150px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"><i class="fas fa-medkit"></i> Curar Ferida</button>
+              
+              <div style="background: #e0e0e0; border: 1px solid #999; border-radius: 5px; padding: 5px 10px; width: 150px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); margin-top: 10px; box-sizing: border-box;">
+                <label style="font-weight: bold; font-size: 12px; display: block; margin-bottom: 5px; color: #333;">Slots de Anima</label>
+                <input type="number" name="system.slotsAnima" class="anima-spinner recora-native-spinner" value="{{system.slotsAnima}}" min="6" max="9" step="1" onkeydown="return false" style="width: 100%; text-align: center; font-weight: bold; font-size: 16px; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; height: 28px;">
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- GATILHOS -->
+        <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+          <legend style="font-weight: bold; font-size: 18px; padding: 0 5px;">Frases de Gatilho</legend>
+          <div style="margin-bottom: 10px; text-align: left; display: flex; gap: 10px;">
+            <button type="button" class="add-gatilho" style="background: #e0e0e0; border: 1px solid #999; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto;"><i class="fas fa-plus"></i> Adicionar</button>
+            <button type="button" class="action-roll" style="background: #1976d2; color: white; border: 1px solid #1565c0; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"><i class="fas fa-dice-d10"></i> Rolagem de Ação</button>
+          </div>
+          <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px;">
+            {{#each system.listaGatilhos as |gatilho|}}
+            <li class="gatilho-item" data-id="{{gatilho.id}}" style="display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px;">
+              <span style="flex: 1; font-size: 15px;">{{gatilho.text}}</span>
+              <div style="display: flex; gap: 10px;">
+                <a class="edit-gatilho" title="Editar" style="cursor: pointer; color: #42a5f5;"><i class="fas fa-edit"></i></a>
+                <a class="delete-gatilho" title="Deletar" style="cursor: pointer; color: #d32f2f;"><i class="fas fa-trash"></i></a>
+              </div>
+            </li>
+            {{/each}}
+          </ul>
+        </fieldset>
+
+        <!-- HABILIDADES -->
+        <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+          <legend style="font-weight: bold; font-size: 18px; padding: 0 5px;">Habilidades</legend>
+          <div style="margin-bottom: 10px; text-align: left;">
+            <button type="button" class="add-habilidade" style="background: #e0e0e0; border: 1px solid #999; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto;"><i class="fas fa-plus"></i> Adicionar Habilidade</button>
+          </div>
+          <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px;">
+            {{#each system.listaHabilidades as |hab|}}
+            <li class="habilidade-item" data-id="{{hab.id}}" style="display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px;">
+              <span style="flex: 1; font-weight: bold; font-size: 15px;">{{hab.nome}}</span>
+              <div style="display: flex; gap: 10px;">
+                <a class="use-habilidade" title="Usar Habilidade" style="cursor: pointer; color: #43a047;"><i class="fas fa-play"></i></a>
+                <a class="edit-habilidade" title="Editar" style="cursor: pointer; color: #42a5f5;"><i class="fas fa-edit"></i></a>
+                <a class="delete-habilidade" title="Deletar" style="cursor: pointer; color: #d32f2f;"><i class="fas fa-trash"></i></a>
+              </div>
+            </li>
+            {{/each}}
+          </ul>
+        </fieldset>
+      </div> <!-- FIM ABA PRINCIPAL -->
+
+      <!-- ABA: INVENTÁRIO -->
+      <div class="tab" data-group="primary" data-tab="inventario">
+        
+        <!-- CABEÇALHO DO INVENTÁRIO (Pontos, Recursos, Tesouro) -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+          <div style="background: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 10px; text-align: center;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px;">Pontos de Inventário</label>
+            <input type="number" name="system.pontosInventario" class="recora-native-spinner" value="{{system.pontosInventario}}" min="0" step="1" style="width: 80px; text-align: center; height: 30px; font-size: 16px; border: 1px solid #999; border-radius: 3px;" />
+          </div>
+          
+          <div style="background: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 10px; text-align: center;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px;">Recursos</label>
+            <input type="number" name="system.recursos" class="anima-spinner recora-native-spinner" value="{{system.recursos}}" min="0" step="1" style="width: 80px; text-align: center; height: 30px; font-size: 16px; border: 1px solid #999; border-radius: 3px;" />
+          </div>
+
+          <div style="background: #e3f2fd; border: 1px solid #42a5f5; border-radius: 5px; padding: 10px; text-align: center;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #1565c0;">Tesouro</label>
+            <input type="number" value="{{tesouro}}" readonly style="width: 80px; text-align: center; height: 30px; font-size: 16px; border: 1px solid #90caf9; border-radius: 3px; background: #fff; color: #1565c0; font-weight: bold;" />
+          </div>
+        </div>
+
+        <!-- LISTA DE ARTEFATOS -->
+        <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+          <legend style="font-weight: bold; font-size: 18px; padding: 0 5px;">Artefatos</legend>
+          
+          <div style="margin-bottom: 15px;">
+            <button type="button" class="artefato-create" style="background: #e0e0e0; border: 1px solid #999; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto;"><i class="fas fa-plus"></i> Criar Artefato</button>
+          </div>
+
+          <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 15px;">
+            {{#each artefatos as |item id|}}
+            <li class="artefato-item" data-item-id="{{item._id}}" style="background: #fafafa; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
+              <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 3;">
+                  <label style="font-size: 12px; font-weight: bold; color: #555;">Nome</label>
+                  <input type="text" class="artefato-input" data-field="name" value="{{item.name}}" style="width: 100%; height: 28px; padding: 0 5px; font-size: 14px; border: 1px solid #ccc; border-radius: 3px;" />
+                </div>
+                <div style="flex: 1;">
+                  <label style="font-size: 12px; font-weight: bold; color: #555;">Nível</label>
+                  <input type="number" class="artefato-input anima-spinner" data-field="system.nivel" value="{{item.system.nivel}}" step="1" style="width: 100%; height: 28px; text-align: center; font-size: 14px; border: 1px solid #ccc; border-radius: 3px;" />
+                </div>
+              </div>
+              
+              <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                  <label style="font-size: 12px; font-weight: bold; color: #555;">Ressonância</label>
+                  <input type="text" class="artefato-input" data-field="system.ressonancia" value="{{item.system.ressonancia}}" style="width: 100%; height: 28px; padding: 0 5px; font-size: 14px; border: 1px solid #ccc; border-radius: 3px;" />
+                </div>
+                <div style="flex: 2;">
+                  <label style="font-size: 12px; font-weight: bold; color: #555;">Efeito</label>
+                  <input type="text" class="artefato-input" data-field="system.efeito" value="{{item.system.efeito}}" style="width: 100%; height: 28px; padding: 0 5px; font-size: 14px; border: 1px solid #ccc; border-radius: 3px;" />
+                </div>
+              </div>
+              
+              <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="artefato-show" style="background: #1976d2; color: white; border: 1px solid #1565c0; padding: 5px 15px; border-radius: 3px; cursor: pointer; font-weight: bold;"><i class="fas fa-eye"></i> Mostrar</button>
+                <button type="button" class="artefato-delete" style="background: #d32f2f; color: white; border: 1px solid #c62828; padding: 5px 15px; border-radius: 3px; cursor: pointer; font-weight: bold;"><i class="fas fa-trash"></i> Deletar</button>
+              </div>
+            </li>
+            {{/each}}
+          </ul>
+        </fieldset>
+
+        <!-- CAIXA DE TEXTO DO INVENTÁRIO (Baixo) -->
+        <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+          <legend style="font-weight: bold; font-size: 18px; padding: 0 5px;">Inventário Completo</legend>
+          <textarea name="system.inventarioTexto" placeholder="Anote aqui outros itens, descrições e detalhes do seu inventário..." style="width: 100%; height: 250px; resize: vertical; font-size: 14px; padding: 10px; border: 1px solid #ccc; border-radius: 3px; font-family: sans-serif; box-sizing: border-box;">{{system.inventarioTexto}}</textarea>
+        </fieldset>
+
+      </div> <!-- FIM ABA INVENTÁRIO -->
+
+      <!-- ABA: CRÔNICAS -->
+      <div class="tab" data-group="primary" data-tab="cronicas">
+        
+        <div style="margin-bottom: 15px;">
+          <button type="button" class="cronica-create" style="background: #e0e0e0; border: 1px solid #999; padding: 8px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto;"><i class="fas fa-book"></i> Registrar Nova Crônica</button>
+        </div>
+
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 15px;">
+          {{#each system.listaCronicas as |cronica|}}
+          <li class="cronica-item" data-id="{{cronica.id}}" style="background: #fafafa; border: 1px solid #ddd; border-radius: 5px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
+              <div style="flex: 1;">
+                <label style="font-size: 12px; font-weight: bold; color: #555;">Título da Crônica</label>
+                <input type="text" class="cronica-input" data-field="titulo" value="{{cronica.titulo}}" style="width: 100%; height: 30px; padding: 0 5px; font-size: 16px; font-weight: bold; border: 1px solid #ccc; border-radius: 3px;" />
+              </div>
+              
+              <div style="display: flex; align-items: center; gap: 5px; margin-top: 15px; background: #e8f5e9; padding: 5px 10px; border: 1px solid #81c784; border-radius: 5px;">
+                <input type="checkbox" class="cronica-input" data-field="completa" {{checked cronica.completa}} style="width: 18px; height: 18px; cursor: pointer; margin: 0;" />
+                <label style="font-size: 14px; font-weight: bold; color: #2e7d32; cursor: pointer; margin: 0;">Completa</label>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label style="font-size: 12px; font-weight: bold; color: #555;">Descrição</label>
+              <textarea class="cronica-input" data-field="descricao" style="width: 100%; height: 120px; resize: vertical; font-size: 14px; padding: 8px; border: 1px solid #ccc; border-radius: 3px; font-family: sans-serif; box-sizing: border-box;">{{cronica.descricao}}</textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="button" class="cronica-delete" style="background: #d32f2f; color: white; border: 1px solid #c62828; padding: 5px 15px; border-radius: 3px; cursor: pointer; font-weight: bold; width: auto;"><i class="fas fa-trash"></i> Deletar Crônica</button>
+            </div>
+            
+          </li>
+          {{/each}}
+        </ul>
+
+      </div> <!-- FIM ABA CRÔNICAS -->
+
+    </section> <!-- FIM CORPO -->
+
+  </div>
+</form>

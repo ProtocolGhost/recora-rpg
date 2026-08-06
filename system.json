@@ -1,0 +1,18 @@
+{
+  "id": "recora-rpg",
+  "title": "Recora RPG",
+  "description": "Sistema do Recora RPG.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "11",
+    "verified": "15"
+  },
+  "authors": [
+    { "name": "El Pato" }
+  ],
+  "esmodules": ["recora-rpg.js"],
+  "styles": ["css/recora-rpg.css"],
+  "url": "",
+  "manifest": "",
+  "download": ""
+}

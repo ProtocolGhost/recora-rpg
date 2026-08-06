@@ -1,0 +1,17 @@
+.recora-rpg input[type="number"] {
+	appearance: auto !important;
+	-webkit-appearance: auto !important;
+	-moz-appearance: auto !important;
+	padding-right: 18px;
+	box-sizing: border-box;
+}
+
+.recora-rpg input[type="number"]::-webkit-inner-spin-button,
+.recora-rpg input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: auto !important;
+	appearance: auto !important;
+	opacity: 1 !important;
+	display: block !important;
+	margin: 0;
+	pointer-events: auto;
+}

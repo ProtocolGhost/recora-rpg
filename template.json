@@ -1,0 +1,31 @@
+{
+  "Actor": {
+    "types": ["character"],
+    "templates": {},
+    "character": {
+      "attributes": {
+        "agape": { "value": "d6", "energia": 0 },
+        "logos": { "value": "d6", "energia": 0 },
+        "umbra": { "value": "d6", "energia": 0 },
+        "calma": { "value": "d6", "energia": 0 },
+        "impeto": { "value": "d6", "energia": 0 }
+      },
+      "manaGrid": {
+        "r1c1": { "value": "" }, "r1c2": { "value": "" }, "r1c3": { "value": "" },
+        "r2c1": { "value": "" }, "r2c2": { "value": "" }, "r2c3": { "value": "" },
+        "r3c1": { "value": "" }, "r3c2": { "value": "" }, "r3c3": { "value": "" }
+      },
+      "gatilhos": { "value": "" }
+    }
+  },
+  "Item": {
+    "types": ["habilidade", "artefato"],
+    "templates": {},
+    "habilidade": {
+      "description": ""
+    },
+    "artefato": {
+      "beneficio": ""
+    }
+  }
+}
