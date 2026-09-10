@@ -2,7 +2,7 @@
   "id": "recora-rpg",
   "title": "Recora RPG",
   "description": "Sistema do Recora RPG.",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "compatibility": {
     "minimum": "11",
     "verified": "15"
@@ -12,7 +12,7 @@
   ],
   "esmodules": ["recora-rpg.js"],
   "styles": ["css/recora-rpg.css"],
-  "url": "",
+  "url": "https://github.com/ProtocolGhost/recora-rpg",
   "manifest": "https://raw.githubusercontent.com/ProtocolGhost/recora-rpg/main/system.json",
   "download": "https://github.com/ProtocolGhost/recora-rpg/archive/refs/heads/main.zip"
 }
