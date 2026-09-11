@@ -37,6 +37,7 @@ class RecoraActorSheet extends ActorSheet {
     }
 
     sys.persona = sys.persona || "";
+    sys.pontosDesejo = sys.pontosDesejo ?? "";
     sys.listaGatilhos = sys.listaGatilhos || [];
     sys.listaTalentos = sys.listaTalentos || [];
     sys.listaHabilidades = sys.listaHabilidades || [];

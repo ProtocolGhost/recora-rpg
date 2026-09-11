@@ -36,16 +36,21 @@
 
     <!-- CABEÇALHO (Fixo) -->
     <header
-      style="display: flex; gap: 20px; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #ccc; padding-bottom: 15px; flex-shrink: 0;">
+      style="display: flex; gap: 20px; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #ccc; padding-bottom: 10px; flex-shrink: 0;">
       <img src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="100" width="100"
         style="border: 2px solid #555; border-radius: 10px; cursor: pointer;" />
       <div style="flex: 1;">
         <input name="name" type="text" value="{{actor.name}}" placeholder="Nome do Personagem"
-          style="width: 100%; font-size: 24px; font-weight: bold; border: none; border-bottom: 1px dashed #aaa; background: transparent; margin-bottom: 5px;" />
-        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+          style="width: 100%; font-size: 24px; font-weight: bold; border: none; border-bottom: 1px dashed #aaa; background: transparent; margin-bottom: 2px;" />
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 3px;">
           <label style="font-weight: bold; font-size: 16px;">Persona:</label>
           <input name="system.persona" type="text" value="{{system.persona}}" placeholder="Sua Persona aqui"
             style="flex: 1; height: 30px; font-size: 14px; padding: 0 5px;" />
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+          <label style="font-weight: bold; font-size: 16px;">Pontos de Desejo:</label>
+          <input name="system.pontosDesejo" type="number" value="{{system.pontosDesejo}}" min="0" step="1"
+            style="width: 65px; height: 24px; text-align: center; font-size: 14px; padding: 0 4px;" />
         </div>
       </div>
     </header>
