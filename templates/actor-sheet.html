@@ -49,8 +49,15 @@
         </div>
         <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
           <label style="font-weight: bold; font-size: 16px;">Pontos de Desejo:</label>
-          <input name="system.pontosDesejo" type="number" value="{{system.pontosDesejo}}" min="0" step="1"
-            style="width: 65px; height: 24px; text-align: center; font-size: 14px; padding: 0 4px;" />
+          <div class="desejo-markers" role="group" aria-label="Pontos de Desejo">
+            {{#each pontosDesejoMarcadores as |marcador|}}
+            <span class="desejo-marker {{#if marcador.active}}active{{/if}}" role="button" tabindex="0"
+              data-value="{{marcador.value}}" aria-label="{{marcador.value}} ponto(s) de desejo"
+              aria-pressed="{{marcador.active}}" title="{{marcador.value}} ponto(s) de desejo">
+              <i class="fas fa-dice-d20"></i>
+            </span>
+            {{/each}}
+          </div>
         </div>
       </div>
     </header>

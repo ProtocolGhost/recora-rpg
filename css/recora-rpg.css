@@ -185,3 +185,629 @@
 .recora form .sheet-body {
 	scrollbar-color: var(--recora-brass) var(--recora-paper-deep);
 }
+
+.recora form .desejo-markers {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+}
+
+.recora form .desejo-marker {
+	position: relative;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	appearance: none !important;
+	-webkit-appearance: none !important;
+	-moz-appearance: none !important;
+	color: #88765b;
+	font-size: 19px;
+	line-height: 1;
+	background: transparent;
+	background-image: none !important;
+	border: 0 !important;
+	border-radius: 50%;
+	box-shadow: none !important;
+	cursor: pointer;
+	transition: color 0.15s ease;
+}
+
+.recora form .desejo-marker::-moz-focus-inner {
+	padding: 0;
+	border: 0;
+}
+
+.recora form .desejo-marker:hover {
+	color: #aa936b;
+}
+
+.recora form .desejo-marker:focus,
+.recora form .desejo-marker:focus-visible,
+.recora form .desejo-marker:active {
+	outline: none !important;
+	outline-offset: 0;
+	border-color: transparent !important;
+	box-shadow: none !important;
+	-webkit-focus-ring-color: transparent;
+}
+
+.recora form .desejo-marker.active {
+	color: #f1d28b;
+	background: transparent;
+	border-color: transparent;
+	box-shadow: none;
+	filter: none;
+	text-shadow: 0 0 3px rgba(241, 210, 139, 0.75);
+	animation: desejo-acender 220ms ease-out;
+}
+
+.recora form .desejo-marker.active::after {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	color: #fff;
+	font-size: 11px;
+	line-height: 1;
+	content: "•";
+	text-shadow: 0 0 2px rgba(255, 255, 255, 0.95);
+	transform: translate(-50%, -50%);
+}
+
+@keyframes desejo-acender {
+	0% {
+		background: transparent;
+		box-shadow: none;
+		text-shadow: none;
+	}
+	60% {
+		background: transparent;
+		box-shadow: none;
+		text-shadow: 0 0 5px rgba(241, 210, 139, 0.9);
+	}
+	100% {
+		background: transparent;
+		box-shadow: none;
+		text-shadow: 0 0 3px rgba(241, 210, 139, 0.75);
+	}
+}
+
+.recora form.recora-npc-sheet {
+	--recora-npc-paper: #f3eee3;
+	--recora-npc-paper-deep: #e7dece;
+	--recora-npc-ink: #2d2925;
+	--recora-npc-brass: #a47732;
+	--recora-npc-brass-light: #d0ad68;
+	--recora-npc-teal: #176b70;
+	color: var(--recora-npc-ink);
+	font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
+
+.recora-npc-sheet .recora-npc-container {
+	height: 100%;
+	padding: 16px;
+	box-sizing: border-box;
+	overflow-y: auto;
+	background-color: var(--recora-npc-paper) !important;
+	background-image: repeating-linear-gradient(0deg, rgba(98, 73, 38, 0.035) 0, rgba(98, 73, 38, 0.035) 1px, transparent 1px, transparent 5px) !important;
+}
+
+.recora-npc-sheet .recora-npc-header {
+	display: flex;
+	gap: 14px;
+	align-items: center;
+	margin-bottom: 16px;
+	padding-bottom: 12px;
+	border-bottom: 2px solid var(--recora-npc-brass);
+}
+
+.recora-npc-sheet .recora-npc-header img {
+	border: 3px solid var(--recora-npc-brass);
+	border-radius: 5px;
+	box-shadow: 3px 3px 0 rgba(77, 57, 29, 0.18);
+	cursor: pointer;
+}
+
+.recora-npc-sheet .recora-npc-identity {
+	flex: 1;
+}
+
+.recora-npc-sheet .recora-npc-level-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 7px;
+}
+
+.recora-npc-sheet label,
+.recora-npc-sheet legend {
+	color: #104c51;
+	font-weight: bold;
+}
+
+.recora-npc-sheet .recora-npc-identity label,
+.recora-npc-sheet .recora-npc-field label,
+.recora-npc-sheet .recora-npc-level-row label {
+	display: block;
+	margin-bottom: 5px;
+	font-size: 13px;
+}
+
+.recora-npc-sheet input {
+	box-sizing: border-box;
+	border: 1px solid #b99a62;
+	border-radius: 3px;
+	background: rgba(255, 252, 245, 0.9);
+	color: var(--recora-npc-ink);
+}
+
+.recora-npc-sheet input:focus {
+	border-color: var(--recora-npc-teal);
+	box-shadow: 0 0 0 2px rgba(23, 107, 112, 0.16);
+	outline: none;
+}
+
+.recora-npc-sheet .recora-npc-identity input {
+	width: 100%;
+	height: 34px;
+	padding: 0 8px;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.recora-npc-sheet .recora-npc-level-row label {
+	margin: 0;
+}
+
+.recora-npc-sheet .recora-npc-level-row input {
+	width: 44px;
+	height: 24px;
+	padding: 0 3px;
+	text-align: center;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.recora-npc-sheet .recora-npc-section {
+	margin: 0 0 16px;
+	padding: 12px;
+	background: rgba(255, 252, 245, 0.58);
+	border: 1px solid var(--recora-npc-brass);
+	border-radius: 4px;
+	box-shadow: 0 2px 0 rgba(107, 77, 32, 0.12);
+}
+
+.recora-npc-sheet .recora-npc-section legend {
+	padding: 2px 8px;
+	background: var(--recora-npc-paper);
+	border: 1px solid var(--recora-npc-brass-light);
+	border-radius: 3px;
+}
+
+.recora-npc-sheet .recora-npc-field input {
+	width: 44px;
+	height: 30px;
+	padding: 0 5px;
+	text-align: center;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.recora-npc-sheet .recora-npc-trigger-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 4px;
+}
+
+.recora-npc-sheet .recora-npc-trigger {
+	padding-top: 8px;
+	padding-bottom: 9px;
+}
+
+.recora-npc-sheet .recora-npc-trigger-values {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.recora-npc-sheet .recora-npc-trigger-values input {
+	width: 45px;
+	height: 28px;
+	text-align: center;
+	font-weight: bold;
+}
+
+.recora-npc-sheet .recora-npc-trigger-values input[readonly] {
+	background: var(--recora-npc-paper-deep);
+	cursor: not-allowed;
+}
+
+.recora-npc-sheet .npc-edit-trigger-max,
+.recora-npc-sheet .npc-add-condition {
+	padding: 5px 9px;
+	color: var(--recora-npc-teal);
+	font-family: inherit;
+	font-weight: bold;
+	background: var(--recora-npc-paper-deep);
+	border: 1px solid var(--recora-npc-brass-light);
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.recora-npc-sheet .npc-edit-trigger-max {
+	padding: 5px 7px;
+}
+
+.recora-npc-sheet .npc-edit-trigger-max:hover,
+.recora-npc-sheet .npc-add-condition:hover {
+	color: var(--recora-npc-brass);
+	background: #fffaf0;
+}
+
+.recora-npc-sheet .recora-npc-trigger-bar {
+	position: relative;
+	height: 14px;
+	overflow: hidden;
+	background: #d8cdbb;
+	border: 1px solid #4b1717;
+	border-radius: 7px;
+	box-shadow: inset 0 1px 2px rgba(40, 10, 10, 0.3);
+}
+
+.recora-npc-sheet .recora-npc-trigger-fill {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	background: linear-gradient(90deg, #2f7d32, #66bb6a);
+	box-shadow: 0 0 5px rgba(102, 187, 106, 0.35);
+	transition: width 0.25s ease;
+}
+
+.recora-npc-sheet .recora-npc-trigger-current-max {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	background: #6f2525;
+	box-shadow: inset 0 1px 2px rgba(40, 10, 10, 0.25);
+	transition: left 0.25s ease;
+}
+
+.recora-npc-sheet .recora-npc-aluci-grid {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.recora-npc-sheet .recora-npc-aluci-card {
+	display: flex;
+	min-width: 0;
+	min-height: 84px;
+	padding: 8px 5px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	border: 1px solid;
+	border-radius: 4px;
+	text-align: center;
+}
+
+.recora-npc-sheet .recora-npc-aluci-card > strong {
+	font-size: 13px;
+}
+
+.recora-npc-sheet .recora-npc-aluci-card > label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.recora-npc-sheet .recora-npc-aluci-card > label i {
+	font-size: 14px;
+}
+
+.recora-npc-sheet .recora-npc-aluci-card input {
+	width: 21px;
+	height: 24px;
+	padding: 0 2px;
+	text-align: center;
+	font-size: 13px;
+	font-weight: bold;
+}
+
+.recora form .action-advantage-input {
+	width: 60px !important;
+	appearance: auto !important;
+	-webkit-appearance: auto !important;
+	-moz-appearance: auto !important;
+	padding-right: 18px !important;
+}
+
+.recora form .action-advantage-input::-webkit-inner-spin-button,
+.recora form .action-advantage-input::-webkit-outer-spin-button {
+	-webkit-appearance: inner-spin-button !important;
+	appearance: auto !important;
+	opacity: 1 !important;
+	display: block !important;
+	margin: 0 !important;
+	pointer-events: auto !important;
+}
+
+.recora-npc-sheet .recora-npc-aluci-agape {
+	background: #fff9c4;
+	border-color: #fbc02d;
+}
+
+.recora-npc-sheet .recora-npc-aluci-logos {
+	background: #e3f2fd;
+	border-color: #42a5f5;
+}
+
+.recora-npc-sheet .recora-npc-aluci-umbra {
+	background: #f3e5f5;
+	border-color: #ab47bc;
+}
+
+.recora-npc-sheet .recora-npc-aluci-calma {
+	background: #e8f5e9;
+	border-color: #66bb6a;
+}
+
+.recora-npc-sheet .recora-npc-aluci-impeto {
+	background: #ffebee;
+	border-color: #ef5350;
+}
+
+.recora-npc-sheet .recora-npc-trigger-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.recora-npc-sheet .npc-apply-trigger-damage,
+.recora-npc-sheet .npc-apply-trigger-heal {
+	padding: 5px 9px;
+	font-family: inherit;
+	font-weight: bold;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.recora-npc-sheet .npc-apply-trigger-damage {
+	color: #7d2525;
+	background: #f8e9e7;
+	border: 1px solid #c9827b;
+}
+
+.recora-npc-sheet .npc-apply-trigger-heal {
+	color: #2f6f34;
+	background: #e8f4e8;
+	border: 1px solid #86b889;
+}
+
+.recora-npc-sheet .npc-apply-trigger-damage:hover,
+.recora-npc-sheet .npc-apply-trigger-heal:hover {
+	filter: brightness(0.96);
+}
+
+.recora-npc-sheet .recora-npc-condition-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 10px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.recora-npc-sheet .recora-npc-condition {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 8px 10px;
+	background: rgba(255, 252, 245, 0.78);
+	border: 1px solid #c7ad7c;
+	border-radius: 3px;
+}
+
+.recora-npc-sheet .recora-npc-condition span {
+	flex: 1;
+	font-size: 14px;
+	word-break: break-word;
+}
+
+.recora-npc-sheet .recora-npc-condition-info {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.recora-npc-sheet .recora-npc-condition-info small {
+	color: #49352b;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.recora-npc-sheet .recora-npc-condition-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.recora-npc-sheet .npc-apply-condition,
+.recora-npc-sheet .npc-edit-condition,
+.recora-npc-sheet .npc-delete-condition {
+	cursor: pointer;
+}
+
+.recora-npc-sheet .npc-apply-condition {
+	color: #2f7d32;
+}
+
+.recora-npc-sheet .npc-edit-condition {
+	color: var(--recora-npc-teal);
+}
+
+.recora-npc-sheet .npc-delete-condition {
+	color: #a34536;
+	cursor: pointer;
+}
+
+.recora-npc-sheet .recora-npc-actions {
+	background: rgba(229, 241, 237, 0.72);
+	border-color: var(--recora-npc-teal);
+}
+
+.recora-npc-sheet .recora-npc-actions legend {
+	color: var(--recora-npc-teal);
+	border-color: #78aaa4;
+	background: #e5f1ed;
+}
+
+.recora-npc-sheet .recora-npc-action-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 10px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.recora-npc-sheet .recora-npc-action {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 8px 10px;
+	background: rgba(245, 252, 249, 0.9);
+	border: 1px solid #8ab8b1;
+	border-radius: 3px;
+}
+
+.recora-npc-sheet .recora-npc-action-info {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+}
+
+.recora-npc-sheet .recora-npc-action-info strong {
+	color: var(--recora-npc-teal);
+	font-size: 14px;
+}
+
+.recora-npc-sheet .recora-npc-action-info span {
+	font-size: 13px;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.recora-npc-sheet .recora-npc-action-info small {
+	color: #49352b;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.recora-npc-sheet .recora-npc-action-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.recora-npc-sheet .npc-use-action,
+.recora-npc-sheet .npc-edit-action,
+.recora-npc-sheet .npc-delete-action {
+	cursor: pointer;
+}
+
+.recora-npc-sheet .npc-use-action {
+	color: #2f7d32;
+}
+
+.recora-npc-sheet .npc-edit-action {
+	color: var(--recora-npc-teal);
+}
+
+.recora-npc-sheet .npc-delete-action {
+	color: #a34536;
+}
+
+.recora-npc-sheet .recora-npc-abilities {
+	background: rgba(243, 238, 227, 0.72);
+	border-color: var(--recora-npc-brass);
+}
+
+.recora-npc-sheet .recora-npc-abilities legend {
+	color: var(--recora-npc-teal);
+}
+
+.recora-npc-sheet .recora-npc-ability-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 10px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.recora-npc-sheet .recora-npc-ability {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 8px 10px;
+	background: rgba(255, 252, 245, 0.82);
+	border: 1px solid #c7ad7c;
+	border-radius: 3px;
+}
+
+.recora-npc-sheet .recora-npc-ability-info {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+}
+
+.recora-npc-sheet .recora-npc-ability-info strong {
+	color: var(--recora-npc-teal);
+	font-size: 14px;
+}
+
+.recora-npc-sheet .recora-npc-ability-info span {
+	font-size: 13px;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.recora-npc-sheet .recora-npc-ability-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.recora-npc-sheet .npc-edit-ability,
+.recora-npc-sheet .npc-delete-ability {
+	cursor: pointer;
+}
+
+.recora-npc-sheet .npc-edit-ability {
+	color: var(--recora-npc-teal);
+}
+
+.recora-npc-sheet .npc-delete-ability {
+	color: #a34536;
+}
+
+@media (max-width: 480px) {
+	.recora-npc-sheet .recora-npc-trigger-heading {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+}

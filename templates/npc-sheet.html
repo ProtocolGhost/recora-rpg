@@ -1,0 +1,114 @@
+<form class="{{cssClass}} recora-npc-sheet" autocomplete="off" style="height: 100%; display: flex; flex-direction: column;">
+  <div class="recora-npc-container">
+    <header class="recora-npc-header">
+      <img src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="90" width="90" />
+      <div class="recora-npc-identity">
+        <label for="npc-name">Nome da Criatura</label>
+        <input id="npc-name" name="name" type="text" value="{{actor.name}}" placeholder="Nome da Criatura" />
+        <div class="recora-npc-level-row">
+          <label for="npc-level">Nível da Criatura</label>
+          <input id="npc-level" name="system.nivel" type="number" value="{{system.nivel}}" min="0" step="1" />
+        </div>
+      </div>
+    </header>
+
+    <fieldset class="recora-npc-section recora-npc-trigger">
+      <legend>Gatilho</legend>
+      <div class="recora-npc-trigger-heading">
+        <label for="npc-trigger-value">Valor Atual</label>
+        <div class="recora-npc-trigger-values">
+          <input id="npc-trigger-value" class="npc-trigger-input" data-field="value" name="system.gatilho.value" type="number" value="{{system.gatilho.value}}" min="0" step="1" aria-label="Valor Atual" />
+          <span>/</span>
+          <input id="npc-trigger-current-max" class="npc-trigger-input" data-field="maxAtual" name="system.gatilho.maxAtual" type="number" value="{{system.gatilho.maxAtual}}" min="0" step="1" aria-label="Máximo Atual" />
+          <span>/</span>
+          <input type="number" value="{{system.gatilho.max}}" readonly aria-label="Máximo" />
+          <button type="button" class="npc-edit-trigger-max" title="Configurar Gatilho máximo"><i class="fas fa-cog"></i></button>
+        </div>
+      </div>
+      <div class="recora-npc-trigger-bar" aria-hidden="true">
+        <div class="recora-npc-trigger-fill" style="width: {{triggerCurrentPct}}%;"></div>
+        <div class="recora-npc-trigger-current-max" style="left: {{triggerMaxAtualPct}}%;"></div>
+      </div>
+      <div class="recora-npc-trigger-actions">
+        <button type="button" class="npc-apply-trigger-damage"><i class="fas fa-heart-broken"></i> Aplicar Dano</button>
+        <button type="button" class="npc-apply-trigger-heal"><i class="fas fa-medkit"></i> Aplicar Cura</button>
+      </div>
+    </fieldset>
+
+    <fieldset class="recora-npc-section recora-npc-aluci">
+      <legend>Defesa</legend>
+      <div class="recora-npc-aluci-grid">
+        <div class="recora-npc-aluci-card recora-npc-aluci-agape">
+          <strong>Ágape</strong>
+          <label><i class="fas fa-shield-alt" title="Defesa" aria-label="Defesa"></i><input name="system.aluci.agape.defesa" type="number" value="{{system.aluci.agape.defesa}}" min="0" step="1" aria-label="Defesa de Ágape" /></label>
+        </div>
+        <div class="recora-npc-aluci-card recora-npc-aluci-logos">
+          <strong>Logos</strong>
+          <label><i class="fas fa-shield-alt" title="Defesa" aria-label="Defesa"></i><input name="system.aluci.logos.defesa" type="number" value="{{system.aluci.logos.defesa}}" min="0" step="1" aria-label="Defesa de Logos" /></label>
+        </div>
+        <div class="recora-npc-aluci-card recora-npc-aluci-umbra">
+          <strong>Umbra</strong>
+          <label><i class="fas fa-shield-alt" title="Defesa" aria-label="Defesa"></i><input name="system.aluci.umbra.defesa" type="number" value="{{system.aluci.umbra.defesa}}" min="0" step="1" aria-label="Defesa de Umbra" /></label>
+        </div>
+        <div class="recora-npc-aluci-card recora-npc-aluci-calma">
+          <strong>Calma</strong>
+          <label><i class="fas fa-shield-alt" title="Defesa" aria-label="Defesa"></i><input name="system.aluci.calma.defesa" type="number" value="{{system.aluci.calma.defesa}}" min="0" step="1" aria-label="Defesa de Calma" /></label>
+        </div>
+        <div class="recora-npc-aluci-card recora-npc-aluci-impeto">
+          <strong>Ímpeto</strong>
+          <label><i class="fas fa-shield-alt" title="Defesa" aria-label="Defesa"></i><input name="system.aluci.impeto.defesa" type="number" value="{{system.aluci.impeto.defesa}}" min="0" step="1" aria-label="Defesa de Ímpeto" /></label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="recora-npc-section recora-npc-actions">
+      <legend>Ações de Gatilho</legend>
+      <button type="button" class="npc-add-action"><i class="fas fa-plus"></i> Adicionar Ação</button>
+      <ul class="recora-npc-action-list">
+        {{#each system.acoesGatilho as |acao|}}
+        <li class="recora-npc-action" data-id="{{acao.id}}">
+          <div class="recora-npc-action-info"><strong>{{acao.nome}}</strong><span>{{acao.descricao}}</span><small>Custo: {{acao.custo}} Gatilho</small></div>
+          <div class="recora-npc-action-actions">
+            <a class="npc-use-action" title="Agir" aria-label="Agir"><i class="fas fa-bolt"></i></a>
+            <a class="npc-edit-action" title="Editar ação" aria-label="Editar ação"><i class="fas fa-edit"></i></a>
+            <a class="npc-delete-action" title="Deletar ação" aria-label="Deletar ação"><i class="fas fa-trash"></i></a>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+    </fieldset>
+
+    <fieldset class="recora-npc-section recora-npc-conditions">
+      <legend>Condições para Gatilho</legend>
+      <button type="button" class="npc-add-condition"><i class="fas fa-plus"></i> Adicionar Condição</button>
+      <ul class="recora-npc-condition-list">
+        {{#each system.condicoesGatilho as |condicao|}}
+        <li class="recora-npc-condition" data-id="{{condicao.id}}">
+          <div class="recora-npc-condition-info"><span>{{condicao.texto}}</span><small>+{{condicao.valor}} Gatilho</small></div>
+          <div class="recora-npc-condition-actions">
+            <a class="npc-apply-condition" title="Aplicar condição" aria-label="Aplicar condição"><i class="fas fa-bolt"></i></a>
+            <a class="npc-edit-condition" title="Editar condição" aria-label="Editar condição"><i class="fas fa-edit"></i></a>
+            <a class="npc-delete-condition" title="Deletar condição" aria-label="Deletar condição"><i class="fas fa-trash"></i></a>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+    </fieldset>
+
+    <fieldset class="recora-npc-section recora-npc-abilities">
+      <legend>Habilidades</legend>
+      <button type="button" class="npc-add-ability"><i class="fas fa-plus"></i> Adicionar Habilidade</button>
+      <ul class="recora-npc-ability-list">
+        {{#each system.habilidadesNpc as |habilidade|}}
+        <li class="recora-npc-ability" data-id="{{habilidade.id}}">
+          <div class="recora-npc-ability-info"><strong>{{habilidade.nome}}</strong><span>{{habilidade.descricao}}</span></div>
+          <div class="recora-npc-ability-actions">
+            <a class="npc-edit-ability" title="Editar habilidade" aria-label="Editar habilidade"><i class="fas fa-edit"></i></a>
+            <a class="npc-delete-ability" title="Deletar habilidade" aria-label="Deletar habilidade"><i class="fas fa-trash"></i></a>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+    </fieldset>
+  </div>
+</form>

@@ -1,6 +1,6 @@
 {
   "Actor": {
-    "types": ["character"],
+    "types": ["character", "npc"],
     "templates": {},
     "character": {
       "attributes": {
@@ -16,6 +16,20 @@
         "r3c1": { "value": "" }, "r3c2": { "value": "" }, "r3c3": { "value": "" }
       },
       "gatilhos": { "value": "" }
+    },
+    "npc": {
+      "nivel": 0,
+      "gatilho": { "value": 20, "maxAtual": 20, "max": 20 },
+      "aluci": {
+        "agape": { "defesa": "" },
+        "logos": { "defesa": "" },
+        "umbra": { "defesa": "" },
+        "calma": { "defesa": "" },
+        "impeto": { "defesa": "" }
+      },
+      "condicoesGatilho": [],
+      "acoesGatilho": [],
+      "habilidadesNpc": []
     }
   },
   "Item": {

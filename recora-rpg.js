@@ -37,7 +37,8 @@ class RecoraActorSheet extends ActorSheet {
     }
 
     sys.persona = sys.persona || "";
-    sys.pontosDesejo = sys.pontosDesejo ?? "";
+    const pontosDesejo = Number.parseInt(sys.pontosDesejo, 10);
+    sys.pontosDesejo = Number.isInteger(pontosDesejo) ? Math.min(5, Math.max(0, pontosDesejo)) : 0;
     sys.listaGatilhos = sys.listaGatilhos || [];
     sys.listaTalentos = sys.listaTalentos || [];
     sys.listaHabilidades = sys.listaHabilidades || [];
@@ -83,6 +84,10 @@ class RecoraActorSheet extends ActorSheet {
     }));
 
     context.system = sys;
+    context.pontosDesejoMarcadores = Array.from({ length: 5 }, (_, index) => ({
+      value: index + 1,
+      active: index < sys.pontosDesejo
+    }));
     context.diceOptions = { "d4": "d4", "d6": "d6", "d8": "d8", "d10": "d10", "d12": "d12" };
 
     // Cálculo automatizado do Tesouro
@@ -145,6 +150,8 @@ class RecoraActorSheet extends ActorSheet {
     html.find('.cronica-create').click(this._onCronicaCreate.bind(this));
     html.find('.cronica-delete').click(this._onCronicaDelete.bind(this));
     html.find('.cronica-input').change(this._onCronicaEdit.bind(this));
+    html.find('.desejo-marker').click(this._onTogglePontoDesejo.bind(this));
+    html.find('.desejo-marker').keydown(this._onKeydownPontoDesejo.bind(this));
 
     html.find('.anima-cell').each((i, el) => {
       const val = $(el).text().trim();
@@ -155,6 +162,27 @@ class RecoraActorSheet extends ActorSheet {
       else if (val === 'I') $(el).css({ 'color': '#ef5350' });
       else if (val === 'F') $(el).css({ 'color': '#b71c1c', 'font-weight': 'bold' });
     });
+  }
+
+  async _onTogglePontoDesejo(event) {
+    event.preventDefault();
+    if (!this.actor.isOwner && !game.user.isGM) return;
+
+    const marker = $(event.currentTarget);
+    const value = Number(marker.data('value'));
+    const currentValue = Number.parseInt(this.actor.system.pontosDesejo, 10) || 0;
+    const newValue = marker.hasClass('active') ? Math.max(0, value - 1) : Math.min(5, value);
+
+    if (newValue === currentValue) return;
+
+    await this.actor.update({ "system.pontosDesejo": newValue });
+    this.render(false);
+  }
+
+  _onKeydownPontoDesejo(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    this._onTogglePontoDesejo(event);
   }
 
   // --- Funções de Artefato ---
@@ -475,6 +503,11 @@ class RecoraActorSheet extends ActorSheet {
           <input type="number" id="action-impulsos" value="0" style="width: 100%; text-align: center; font-size: 16px;" />
         </div>
 
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Vantagem e Desvantagem:</label>
+          <input type="number" id="action-advantage" class="recora-native-spinner action-advantage-input" value="0" min="-2" max="2" step="1" style="width: 60px; text-align: center; font-size: 16px;" />
+        </div>
+
         <div id="action-error-container"></div>
         
         <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-top: 15px; margin-bottom: 10px;">
@@ -500,6 +533,8 @@ class RecoraActorSheet extends ActorSheet {
 
           const selectedAttr = html.find('#action-attr').val();
           const impulsosVal = parseInt(html.find('#action-impulsos').val()) || 0;
+          const advantageInput = html.find('#action-advantage').val();
+          const advantageVal = advantageInput === "" ? 0 : Number(advantageInput);
           const errorContainer = html.find('#action-error-container');
           errorContainer.empty();
 
@@ -520,6 +555,12 @@ class RecoraActorSheet extends ActorSheet {
             return;
           }
 
+          if (!Number.isInteger(advantageVal) || advantageVal < -2 || advantageVal > 2) {
+            errorContainer.html('<p style="color: #d32f2f; font-weight: bold; margin-top: 5px; font-size: 14px; text-align: center;">A Vantagem e Desvantagem deve estar entre -2 e 2.</p>');
+            d.setPosition({ height: "auto" });
+            return;
+          }
+
           const checkedGatilhos = html.find('.gatilho-check:checked').length;
           const totalBonus = checkedGatilhos + impulsosVal;
 
@@ -531,7 +572,9 @@ class RecoraActorSheet extends ActorSheet {
             content: `<div style="font-size: 15px;"><b>${this.actor.name}</b> fez uma rolagem com <b>${impulsosVal}</b> impulsos de <b>${attrNameCap}</b>!</div>`
           });
 
-          let formula = `1d10`;
+          let formula = "1d10";
+          if (advantageVal > 0) formula = `${advantageVal + 1}d10kh1`;
+          else if (advantageVal < 0) formula = `${Math.abs(advantageVal) + 1}d10kl1`;
           if (totalBonus > 0) formula += ` + ${totalBonus}`;
 
           let roll = new Roll(formula);
@@ -1478,8 +1521,540 @@ class RecoraActorSheet extends ActorSheet {
   }
 }
 
+class RecoraNPCSheet extends ActorSheet {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["recora", "sheet", "actor", "recora-npc"],
+      template: "systems/recora-rpg/templates/npc-sheet.html",
+      width: 500,
+      height: 650
+    });
+  }
+
+  async getData(options) {
+    const context = await super.getData(options);
+    const sys = foundry.utils.deepClone(context.actor.system) || {};
+
+    const nivel = Number.parseInt(sys.nivel, 10);
+    sys.nivel = Number.isInteger(nivel) ? Math.max(0, nivel) : 0;
+
+    sys.gatilho = sys.gatilho || {};
+    const gatilhoMax = Number.parseInt(sys.gatilho.max, 10);
+    sys.gatilho.max = Number.isInteger(gatilhoMax) ? Math.max(0, gatilhoMax) : 20;
+    const gatilhoMaxAtual = Number.parseInt(sys.gatilho.maxAtual, 10);
+    sys.gatilho.maxAtual = Number.isInteger(gatilhoMaxAtual)
+      ? Math.min(sys.gatilho.max, Math.max(0, gatilhoMaxAtual))
+      : sys.gatilho.max;
+    const gatilhoValue = Number.parseInt(sys.gatilho.value, 10);
+    sys.gatilho.value = Number.isInteger(gatilhoValue)
+      ? Math.min(sys.gatilho.maxAtual, Math.max(0, gatilhoValue))
+      : sys.gatilho.maxAtual;
+
+    sys.condicoesGatilho = Array.isArray(sys.condicoesGatilho) ? sys.condicoesGatilho : [];
+    sys.condicoesGatilho = sys.condicoesGatilho.map(condicao => {
+      if (typeof condicao === "string") {
+        return { id: foundry.utils.randomID(), texto: condicao, valor: 1 };
+      }
+      const valor = Number.parseInt(condicao.valor, 10);
+      return {
+        ...condicao,
+        id: condicao.id || foundry.utils.randomID(),
+        valor: Number.isInteger(valor) && valor >= 1 ? valor : 1
+      };
+    });
+    sys.acoesGatilho = Array.isArray(sys.acoesGatilho) ? sys.acoesGatilho : [];
+    sys.acoesGatilho = sys.acoesGatilho.map(acao => {
+      const custo = Number.parseInt(acao.custo, 10);
+      return {
+        ...acao,
+        id: acao.id || foundry.utils.randomID(),
+        nome: acao.nome || "Ação sem nome",
+        descricao: acao.descricao || "",
+        custo: Number.isInteger(custo) && custo >= 1 ? custo : 1
+      };
+    });
+    sys.habilidadesNpc = Array.isArray(sys.habilidadesNpc) ? sys.habilidadesNpc : [];
+    sys.habilidadesNpc = sys.habilidadesNpc.map(habilidade => ({
+      ...habilidade,
+      id: habilidade.id || foundry.utils.randomID(),
+      nome: habilidade.nome || "Habilidade sem nome",
+      descricao: habilidade.descricao || ""
+    }));
+    sys.aluci = sys.aluci || {};
+    ["agape", "logos", "umbra", "calma", "impeto"].forEach(aluci => {
+      sys.aluci[aluci] = sys.aluci[aluci] || {};
+      sys.aluci[aluci].defesa = sys.aluci[aluci].defesa ?? "";
+    });
+
+    context.system = sys;
+    context.triggerCurrentPct = sys.gatilho.max > 0
+      ? Math.min(100, Math.max(0, Math.round((sys.gatilho.value / sys.gatilho.max) * 100)))
+      : 0;
+    context.triggerMaxAtualPct = sys.gatilho.max > 0
+      ? Math.min(100, Math.max(0, Math.round((sys.gatilho.maxAtual / sys.gatilho.max) * 100)))
+      : 0;
+    return context;
+  }
+
+  activateListeners(html) {
+    super.activateListeners(html);
+    html.find('.npc-edit-trigger-max').click(this._onEditTriggerMax.bind(this));
+    html.find('.npc-trigger-input').change(this._onEditTriggerInput.bind(this));
+    html.find('.npc-apply-trigger-damage').click(this._onApplyTriggerDamage.bind(this));
+    html.find('.npc-apply-trigger-heal').click(this._onApplyTriggerHeal.bind(this));
+    html.find('.npc-add-condition').click(this._onAddCondition.bind(this));
+    html.find('.npc-edit-condition').click(this._onEditCondition.bind(this));
+    html.find('.npc-apply-condition').click(this._onApplyCondition.bind(this));
+    html.find('.npc-delete-condition').click(this._onDeleteCondition.bind(this));
+    html.find('.npc-add-action').click(this._onAddAction.bind(this));
+    html.find('.npc-edit-action').click(this._onEditAction.bind(this));
+    html.find('.npc-use-action').click(this._onUseAction.bind(this));
+    html.find('.npc-delete-action').click(this._onDeleteAction.bind(this));
+    html.find('.npc-add-ability').click(this._onAddAbility.bind(this));
+    html.find('.npc-edit-ability').click(this._onEditAbility.bind(this));
+    html.find('.npc-delete-ability').click(this._onDeleteAbility.bind(this));
+  }
+
+  _getNPCScrollTop() {
+    return this.element?.find('.recora-npc-container').scrollTop() || 0;
+  }
+
+  _renderNPCKeepingScroll(scrollTop) {
+    this.render(false);
+    setTimeout(() => {
+      const container = this.element?.find('.recora-npc-container');
+      if (container?.length) container.scrollTop(scrollTop);
+    }, 0);
+  }
+
+  async _onEditTriggerMax(event) {
+    event.preventDefault();
+    const currentMax = Number.parseInt(this.actor.system.gatilho?.max, 10);
+    const dialogContent = `
+      <form>
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Gatilho máximo:</label>
+          <input type="number" id="npc-trigger-max" value="${Number.isInteger(currentMax) ? currentMax : 20}" min="0" step="1" style="width: 100%; text-align: center;" autofocus />
+        </div>
+      </form>
+    `;
+
+    new Dialog({
+      title: "Configurar Gatilho",
+      content: dialogContent,
+      buttons: {
+        save: {
+          icon: '<i class="fas fa-save"></i>',
+          label: "Salvar",
+          callback: async html => {
+            const max = Number.parseInt(html.find('#npc-trigger-max').val(), 10);
+            if (!Number.isInteger(max) || max < 0) return;
+
+            const currentValue = Number.parseInt(this.actor.system.gatilho?.value, 10) || 0;
+            const currentMaxAtual = Number.parseInt(this.actor.system.gatilho?.maxAtual, 10);
+            const maxAtual = Number.isInteger(currentMaxAtual) ? Math.min(max, Math.max(0, currentMaxAtual)) : max;
+            const scrollTop = this._getNPCScrollTop();
+            await this.actor.update({
+              "system.gatilho.max": max,
+              "system.gatilho.maxAtual": maxAtual,
+              "system.gatilho.value": Math.min(maxAtual, Math.max(0, currentValue))
+            });
+            this._renderNPCKeepingScroll(scrollTop);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "Cancelar"
+        }
+      },
+      default: "save"
+    }).render(true);
+  }
+
+  async _onEditTriggerInput(event) {
+    event.preventDefault();
+    const field = event.currentTarget.dataset.field;
+    const scrollTop = this._getNPCScrollTop();
+    const gatilho = this.actor.system.gatilho || {};
+    const max = Math.max(0, Number.parseInt(gatilho.max, 10) || 0);
+    let maxAtual = Math.max(0, Number.parseInt(gatilho.maxAtual, 10) || 0);
+    let value = Math.max(0, Number.parseInt(gatilho.value, 10) || 0);
+
+    if (field === "maxAtual") maxAtual = Math.min(max, Number.parseInt(event.currentTarget.value, 10) || 0);
+    if (field === "value") value = Math.min(maxAtual, Number.parseInt(event.currentTarget.value, 10) || 0);
+    value = Math.min(value, maxAtual);
+
+    await this.actor.update({
+      "system.gatilho.maxAtual": maxAtual,
+      "system.gatilho.value": value
+    });
+    this._renderNPCKeepingScroll(scrollTop);
+  }
+
+  async _onApplyTriggerDamage(event) {
+    event.preventDefault();
+    this._openTriggerAdjustmentDialog("damage");
+  }
+
+  async _onApplyTriggerHeal(event) {
+    event.preventDefault();
+    this._openTriggerAdjustmentDialog("heal");
+  }
+
+  _openTriggerAdjustmentDialog(type) {
+    const isDamage = type === "damage";
+    const title = isDamage ? "Aplicar Dano" : "Aplicar Cura";
+    const label = isDamage ? "Quantidade de dano:" : "Quantidade de cura:";
+    const icon = isDamage ? "fa-heart-broken" : "fa-medkit";
+    const dialogContent = `
+      <form>
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">${label}</label>
+          <input type="number" id="npc-trigger-adjustment" min="1" step="1" style="width: 100%; text-align: center;" autofocus />
+        </div>
+      </form>
+    `;
+
+    new Dialog({
+      title,
+      content: dialogContent,
+      buttons: {
+        apply: {
+          icon: `<i class="fas ${icon}"></i>`,
+          label: "Aplicar",
+          callback: async html => {
+            const amount = Number.parseInt(html.find('#npc-trigger-adjustment').val(), 10);
+            if (!Number.isInteger(amount) || amount < 1) return;
+
+            const gatilho = this.actor.system.gatilho || {};
+            const max = Math.max(0, Number.parseInt(gatilho.max, 10) || 0);
+            const maxAtual = Math.max(0, Number.parseInt(gatilho.maxAtual, 10) || 0);
+            const value = Math.min(maxAtual, Math.max(0, Number.parseInt(gatilho.value, 10) || 0));
+            const novoMaxAtual = isDamage
+              ? Math.max(0, maxAtual - amount)
+              : Math.min(max, maxAtual + amount);
+            const novoValue = Math.min(value, novoMaxAtual);
+            const scrollTop = this._getNPCScrollTop();
+
+            await this.actor.update({
+              "system.gatilho.maxAtual": novoMaxAtual,
+              "system.gatilho.value": novoValue
+            });
+            this._renderNPCKeepingScroll(scrollTop);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "Cancelar"
+        }
+      },
+      default: "apply"
+    }).render(true);
+  }
+
+  async _onAddCondition(event) {
+    event.preventDefault();
+    this._openConditionDialog();
+  }
+
+  async _onEditCondition(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.recora-npc-condition').data('id');
+    const condicao = (this.actor.system.condicoesGatilho || []).find(item => item.id === id);
+    if (!condicao) return;
+
+    this._openConditionDialog(condicao);
+  }
+
+  _openConditionDialog(condicao = null) {
+    const texto = condicao ? foundry.utils.escapeHTML(condicao.texto || "") : "";
+    const valor = condicao?.valor || 1;
+    const title = condicao ? "Editar Condição" : "Adicionar Condição";
+    const dialogContent = `
+      <form>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descrição:</label>
+          <input type="text" id="npc-condition-text" value="${texto}" style="width: 100%;" autofocus />
+        </div>
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Valor de Gatilho:</label>
+          <input type="number" id="npc-condition-value" value="${valor}" min="1" step="1" style="width: 100%; text-align: center;" />
+        </div>
+      </form>
+    `;
+
+    new Dialog({
+      title,
+      content: dialogContent,
+      buttons: {
+        save: {
+          icon: '<i class="fas fa-save"></i>',
+          label: "Salvar",
+          callback: async html => {
+            const novoTexto = html.find('#npc-condition-text').val().trim();
+            const novoValor = Number.parseInt(html.find('#npc-condition-value').val(), 10);
+            if (!novoTexto || !Number.isInteger(novoValor) || novoValor < 1) return;
+
+            const condicoes = this.actor.system.condicoesGatilho || [];
+            if (condicao) {
+              const index = condicoes.findIndex(item => item.id === condicao.id);
+              if (index !== -1) condicoes[index] = { ...condicoes[index], texto: novoTexto, valor: novoValor };
+            } else {
+              condicoes.push({ id: foundry.utils.randomID(), texto: novoTexto, valor: novoValor });
+            }
+
+            const scrollTop = this._getNPCScrollTop();
+            await this.actor.update({ "system.condicoesGatilho": condicoes });
+            this._renderNPCKeepingScroll(scrollTop);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "Cancelar"
+        }
+      },
+      default: "save"
+    }).render(true);
+  }
+
+  async _onApplyCondition(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.recora-npc-condition').data('id');
+    const condicao = (this.actor.system.condicoesGatilho || []).find(item => item.id === id);
+    if (!condicao) return;
+
+    const gatilho = this.actor.system.gatilho || {};
+    const maxAtual = Math.max(0, Number.parseInt(gatilho.maxAtual, 10) || 0);
+    const valorAtual = Math.max(0, Number.parseInt(gatilho.value, 10) || 0);
+    const valorCondicao = Math.max(1, Number.parseInt(condicao.valor, 10) || 1);
+    const novoValor = Math.min(maxAtual, valorAtual + valorCondicao);
+    const scrollTop = this._getNPCScrollTop();
+
+    await this.actor.update({ "system.gatilho.value": novoValor });
+    this._renderNPCKeepingScroll(scrollTop);
+  }
+
+  async _onDeleteCondition(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.recora-npc-condition').data('id');
+    const condicoes = this.actor.system.condicoesGatilho || [];
+
+    Dialog.confirm({
+      title: "Deletar Condição",
+      content: `<p style="text-align: center;">Tem certeza que deseja deletar esta condição?</p>`,
+      yes: async () => {
+        const scrollTop = this._getNPCScrollTop();
+        await this.actor.update({
+          "system.condicoesGatilho": condicoes.filter(condicao => condicao.id !== id)
+        });
+        this._renderNPCKeepingScroll(scrollTop);
+      },
+      defaultYes: false
+    });
+  }
+
+  async _onAddAction(event) {
+    event.preventDefault();
+    this._openActionDialog();
+  }
+
+  async _onEditAction(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.recora-npc-action').data('id');
+    const acao = (this.actor.system.acoesGatilho || []).find(item => item.id === id);
+    if (!acao) return;
+
+    this._openActionDialog(acao);
+  }
+
+  _openActionDialog(acao = null) {
+    const nome = acao ? foundry.utils.escapeHTML(acao.nome || "") : "";
+    const descricao = acao ? foundry.utils.escapeHTML(acao.descricao || "") : "";
+    const custo = acao?.custo || 1;
+    const title = acao ? "Editar Ação de Gatilho" : "Adicionar Ação de Gatilho";
+    const dialogContent = `
+      <form>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nome:</label>
+          <input type="text" id="npc-action-name" value="${nome}" style="width: 100%;" autofocus />
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descrição:</label>
+          <textarea id="npc-action-description" style="width: 100%; height: 90px; resize: vertical;">${descricao}</textarea>
+        </div>
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Custo:</label>
+          <input type="number" id="npc-action-cost" value="${custo}" min="1" step="1" style="width: 100%; text-align: center;" />
+        </div>
+      </form>
+    `;
+
+    new Dialog({
+      title,
+      content: dialogContent,
+      buttons: {
+        save: {
+          icon: '<i class="fas fa-save"></i>',
+          label: "Salvar",
+          callback: async html => {
+            const novoNome = html.find('#npc-action-name').val().trim();
+            const novaDescricao = html.find('#npc-action-description').val().trim();
+            const novoCusto = Number.parseInt(html.find('#npc-action-cost').val(), 10);
+            if (!novoNome || !Number.isInteger(novoCusto) || novoCusto < 1) return;
+
+            const acoes = this.actor.system.acoesGatilho || [];
+            if (acao) {
+              const index = acoes.findIndex(item => item.id === acao.id);
+              if (index !== -1) acoes[index] = { ...acoes[index], nome: novoNome, descricao: novaDescricao, custo: novoCusto };
+            } else {
+              acoes.push({ id: foundry.utils.randomID(), nome: novoNome, descricao: novaDescricao, custo: novoCusto });
+            }
+
+            const scrollTop = this._getNPCScrollTop();
+            await this.actor.update({ "system.acoesGatilho": acoes });
+            this._renderNPCKeepingScroll(scrollTop);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "Cancelar"
+        }
+      },
+      default: "save"
+    }).render(true);
+  }
+
+  async _onUseAction(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.recora-npc-action').data('id');
+    const acao = (this.actor.system.acoesGatilho || []).find(item => item.id === id);
+    if (!acao) return;
+
+    const gatilho = this.actor.system.gatilho || {};
+    const valorAtual = Math.max(0, Number.parseInt(gatilho.value, 10) || 0);
+    const custo = Math.max(1, Number.parseInt(acao.custo, 10) || 1);
+    if (valorAtual < custo) {
+      ui.notifications.error("A criatura não tem gatilho suficiente para fazer essa ação");
+      return;
+    }
+
+    const nome = foundry.utils.escapeHTML(acao.nome || "Ação");
+    const descricao = foundry.utils.escapeHTML(acao.descricao || "Nenhuma descrição informada.");
+    const scrollTop = this._getNPCScrollTop();
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      content: `<div style="border: 1px solid #9f4545; border-radius: 4px; padding: 10px; background: #f8e9e7;"><h3 style="margin: 0; padding-bottom: 6px; color: #7d2525; border-bottom: 1px solid #d9a7a2;">${nome}</h3><div style="margin-top: 8px; color: #111; white-space: pre-wrap;">${descricao}</div></div>`
+    });
+
+    await this.actor.update({ "system.gatilho.value": valorAtual - custo });
+    this._renderNPCKeepingScroll(scrollTop);
+  }
+
+  async _onDeleteAction(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.recora-npc-action').data('id');
+    const acoes = this.actor.system.acoesGatilho || [];
+
+    Dialog.confirm({
+      title: "Deletar Ação",
+      content: `<p style="text-align: center;">Tem certeza que deseja deletar esta ação?</p>`,
+      yes: async () => {
+        const scrollTop = this._getNPCScrollTop();
+        await this.actor.update({ "system.acoesGatilho": acoes.filter(acao => acao.id !== id) });
+        this._renderNPCKeepingScroll(scrollTop);
+      },
+      defaultYes: false
+    });
+  }
+
+  async _onAddAbility(event) {
+    event.preventDefault();
+    this._openAbilityDialog();
+  }
+
+  async _onEditAbility(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.recora-npc-ability').data('id');
+    const habilidade = (this.actor.system.habilidadesNpc || []).find(item => item.id === id);
+    if (!habilidade) return;
+
+    this._openAbilityDialog(habilidade);
+  }
+
+  _openAbilityDialog(habilidade = null) {
+    const nome = habilidade ? foundry.utils.escapeHTML(habilidade.nome || "") : "";
+    const descricao = habilidade ? foundry.utils.escapeHTML(habilidade.descricao || "") : "";
+    const title = habilidade ? "Editar Habilidade" : "Adicionar Habilidade";
+    const dialogContent = `
+      <form>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nome:</label>
+          <input type="text" id="npc-ability-name" value="${nome}" style="width: 100%;" autofocus />
+        </div>
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descrição:</label>
+          <textarea id="npc-ability-description" style="width: 100%; height: 90px; resize: vertical;">${descricao}</textarea>
+        </div>
+      </form>
+    `;
+
+    new Dialog({
+      title,
+      content: dialogContent,
+      buttons: {
+        save: {
+          icon: '<i class="fas fa-save"></i>',
+          label: "Salvar",
+          callback: async html => {
+            const novoNome = html.find('#npc-ability-name').val().trim();
+            const novaDescricao = html.find('#npc-ability-description').val().trim();
+            if (!novoNome) return;
+
+            const habilidades = this.actor.system.habilidadesNpc || [];
+            if (habilidade) {
+              const index = habilidades.findIndex(item => item.id === habilidade.id);
+              if (index !== -1) habilidades[index] = { ...habilidades[index], nome: novoNome, descricao: novaDescricao };
+            } else {
+              habilidades.push({ id: foundry.utils.randomID(), nome: novoNome, descricao: novaDescricao });
+            }
+
+            const scrollTop = this._getNPCScrollTop();
+            await this.actor.update({ "system.habilidadesNpc": habilidades });
+            this._renderNPCKeepingScroll(scrollTop);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "Cancelar"
+        }
+      },
+      default: "save"
+    }).render(true);
+  }
+
+  async _onDeleteAbility(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.recora-npc-ability').data('id');
+    const habilidades = this.actor.system.habilidadesNpc || [];
+
+    Dialog.confirm({
+      title: "Deletar Habilidade",
+      content: `<p style="text-align: center;">Tem certeza que deseja deletar esta habilidade?</p>`,
+      yes: async () => {
+        const scrollTop = this._getNPCScrollTop();
+        await this.actor.update({
+          "system.habilidadesNpc": habilidades.filter(habilidade => habilidade.id !== id)
+        });
+        this._renderNPCKeepingScroll(scrollTop);
+      },
+      defaultYes: false
+    });
+  }
+}
+
 Hooks.once("init", () => {
   console.log("Recora RPG | Sistema Carregado...");
   Actors.unregisterSheet("core", ActorSheet);
   Actors.registerSheet("recora-rpg", RecoraActorSheet, { types: ["character"], makeDefault: true });
+  Actors.registerSheet("recora-rpg", RecoraNPCSheet, { types: ["npc"], makeDefault: true });
 });
