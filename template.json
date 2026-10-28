@@ -1,31 +1,128 @@
 {
   "Actor": {
-    "types": ["character", "npc"],
+    "types": [
+      "character",
+      "npc"
+    ],
     "templates": {},
     "character": {
       "attributes": {
-        "agape": { "value": "d6", "energia": 0 },
-        "logos": { "value": "d6", "energia": 0 },
-        "umbra": { "value": "d6", "energia": 0 },
-        "calma": { "value": "d6", "energia": 0 },
-        "impeto": { "value": "d6", "energia": 0 }
+        "agape": {
+          "value": "d6",
+          "energia": 0
+        },
+        "logos": {
+          "value": "d6",
+          "energia": 0
+        },
+        "umbra": {
+          "value": "d6",
+          "energia": 0
+        },
+        "calma": {
+          "value": "d6",
+          "energia": 0
+        },
+        "impeto": {
+          "value": "d6",
+          "energia": 0
+        }
       },
       "manaGrid": {
-        "r1c1": { "value": "" }, "r1c2": { "value": "" }, "r1c3": { "value": "" },
-        "r2c1": { "value": "" }, "r2c2": { "value": "" }, "r2c3": { "value": "" },
-        "r3c1": { "value": "" }, "r3c2": { "value": "" }, "r3c3": { "value": "" }
+        "r1c1": {
+          "value": ""
+        },
+        "r1c2": {
+          "value": ""
+        },
+        "r1c3": {
+          "value": ""
+        },
+        "r2c1": {
+          "value": ""
+        },
+        "r2c2": {
+          "value": ""
+        },
+        "r2c3": {
+          "value": ""
+        },
+        "r3c1": {
+          "value": ""
+        },
+        "r3c2": {
+          "value": ""
+        },
+        "r3c3": {
+          "value": ""
+        }
       },
-      "gatilhos": { "value": "" }
+      "gatilhos": {
+        "value": ""
+      },
+      "listaProfissoes": [],
+      "persona": "",
+      "pontosDesejo": 0,
+      "slotsAnima": 6,
+      "stats": {
+        "vigor": {
+          "value": 10,
+          "max": 10
+        },
+        "saudePerigo": {
+          "value": 3,
+          "max": 3
+        },
+        "saudeAtencao": {
+          "value": 3,
+          "max": 3
+        },
+        "saudeBom": {
+          "value": 3,
+          "max": 3
+        }
+      },
+      "armadura": {
+        "maxMarcadores": 4,
+        "temporarios": 0,
+        "value": 0
+      },
+      "listaGatilhos": [],
+      "listaTalentos": [],
+      "listaHabilidades": [],
+      "listaCronicas": [],
+      "pontosInventario": 0,
+      "recursos": 0,
+      "inventarioTexto": ""
     },
     "npc": {
       "nivel": 0,
-      "gatilho": { "value": 20, "maxAtual": 20, "max": 20 },
+      "gatilho": {
+        "value": 0,
+        "maxAtual": 20,
+        "max": 20
+      },
+      "armadura": {
+        "maxMarcadores": 4,
+        "temporarios": 0,
+        "value": 0
+      },
       "aluci": {
-        "agape": { "defesa": "" },
-        "logos": { "defesa": "" },
-        "umbra": { "defesa": "" },
-        "calma": { "defesa": "" },
-        "impeto": { "defesa": "" }
+        "agape": {
+          "defesa": ""
+        },
+        "logos": {
+          "defesa": ""
+        },
+        "umbra": {
+          "defesa": ""
+        },
+        "calma": {
+          "defesa": ""
+        },
+        "impeto": {
+          "defesa": ""
+        }
       },
       "condicoesGatilho": [],
       "acoesGatilho": [],
@@ -33,7 +130,10 @@
     }
   },
   "Item": {
-    "types": ["habilidade", "artefato"],
+    "types": [
+      "habilidade",
+      "artefato"
+    ],
     "templates": {},
     "habilidade": {
       "description": ""

@@ -58,6 +58,9 @@
             </span>
             {{/each}}
           </div>
+          <button type="button" class="action-roll desejo-action-button" title="Abrir Rolagem de Ação (Ctrl+A)">
+            <i class="fas fa-dice-d10"></i> Ação
+          </button>
         </div>
       </div>
     </header>
@@ -86,7 +89,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <label style="font-weight: bold; font-size: 15px; color: #333;">Vigor</label>
                 <div style="display: flex; align-items: center; gap: 5px;">
-                  <input type="number" name="system.stats.vigor.value" value="{{system.stats.vigor.value}}"
+                  <input type="number" name="system.stats.vigor.value" min="0" value="{{system.stats.vigor.value}}"
                     style="width: 50px; text-align: center; font-weight: bold; font-size: 14px; border: 1px solid #ccc; border-radius: 3px; background: #fff;"
                     title="Valor Atual" />
                   <span style="font-weight: bold;">/</span>
@@ -110,7 +113,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <label style="font-weight: bold; font-size: 15px; color: #d32f2f;">Saúde (Perigo)</label>
                 <div style="display: flex; align-items: center; gap: 5px;">
-                  <input type="number" name="system.stats.saudePerigo.value" value="{{system.stats.saudePerigo.value}}"
+                  <input type="number" name="system.stats.saudePerigo.value" min="0" value="{{system.stats.saudePerigo.value}}"
                     style="width: 50px; text-align: center; font-weight: bold; font-size: 14px; border: 1px solid #ccc; border-radius: 3px; background: #fff;"
                     title="Valor Atual" />
                   <span style="font-weight: bold;">/</span>
@@ -135,7 +138,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <label style="font-weight: bold; font-size: 15px; color: #f57f17;">Saúde (Atenção)</label>
                 <div style="display: flex; align-items: center; gap: 5px;">
-                  <input type="number" name="system.stats.saudeAtencao.value" value="{{system.stats.saudeAtencao.value}}"
+                  <input type="number" name="system.stats.saudeAtencao.value" min="0" value="{{system.stats.saudeAtencao.value}}"
                     style="width: 50px; text-align: center; font-weight: bold; font-size: 14px; border: 1px solid #ccc; border-radius: 3px; background: #fff;"
                     title="Valor Atual" />
                   <span style="font-weight: bold;">/</span>
@@ -160,7 +163,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <label style="font-weight: bold; font-size: 15px; color: #2e7d32;">Saúde (Bom)</label>
                 <div style="display: flex; align-items: center; gap: 5px;">
-                  <input type="number" name="system.stats.saudeBom.value" value="{{system.stats.saudeBom.value}}"
+                  <input type="number" name="system.stats.saudeBom.value" min="0" value="{{system.stats.saudeBom.value}}"
                     style="width: 50px; text-align: center; font-weight: bold; font-size: 14px; border: 1px solid #ccc; border-radius: 3px; background: #fff;"
                     title="Valor Atual" />
                   <span style="font-weight: bold;">/</span>
@@ -187,6 +190,7 @@
               style="flex: 1; min-width: 100px; padding: 6px 10px; font-weight: bold; background: #e3f2fd; border: 1px solid #90caf9; border-radius: 4px; cursor: pointer;"><i
                 class="fas fa-minus-circle"></i> Gastar Vigor</button>
             <button type="button" class="stat-btn-respiro"
+              title="Atalho: Ctrl+F"
               style="flex: 1; min-width: 100px; padding: 6px 10px; font-weight: bold; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 4px; cursor: pointer;"><i
                 class="fas fa-wind"></i> Respiro</button>
             <button type="button" class="stat-btn-dano"
@@ -197,35 +201,34 @@
                 class="fas fa-medkit"></i> Restaurar</button>
           </div>
 
+          <p style="margin: 20px 0 -6px; color: #666; font-size: 12px; text-align: center;">Atalho de Respiro: Ctrl+F</p>
+
         </fieldset>
 
         <!-- ARMADURA -->
         <fieldset style="margin-bottom: 20px; padding: 15px; border: 1px solid #aaa; border-radius: 5px;">
           <legend style="font-weight: bold; font-size: 16px;">Armadura</legend>
 
-          <!-- Valor e Botão de Engrenagem -->
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <label style="font-weight: bold; font-size: 15px; color: #333;">Valor:</label>
-              <input type="number" name="system.armadura.valor" value="{{system.armadura.valor}}" min="0"
-                style="width: 50px; text-align: center; font-weight: bold; font-size: 14px; border: 1px solid #ccc; border-radius: 3px; background: #fff;"
-                title="Valor da Armadura" />
-            </div>
+          <!-- Botão de Engrenagem -->
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
             <button type="button" class="edit-armadura-config"
               style="background: #e0e0e0; border: 1px solid #999; border-radius: 3px; cursor: pointer; padding: 2px 6px; font-size: 12px; width: auto;"
               title="Configurar Armadura"><i class="fas fa-cog"></i></button>
           </div>
 
-          <!-- Fileira Horizontal de Marcadores (100% automáticos, não editáveis pelo usuário) -->
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-            <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: wrap;">
+          <!-- Fileiras de marcadores (temporários aparecem primeiro) -->
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            <div class="armadura-marker-list">
               {{#each armaduraMarcadores}}
-              <input type="checkbox" class="armadura-marker" data-index="{{@index}}" {{checked this.checked}} disabled title="Preenchido automaticamente ao receber dano" style="width: 20px; height: 20px; cursor: not-allowed; margin: 0; opacity: 0.85;" />
+              <input type="checkbox" class="armadura-marker {{#if this.temporario}}armadura-marker-temporario{{else}}armadura-marker-normal{{/if}}" data-index="{{@index}}" {{checked this.checked}} disabled title="Preenchido automaticamente ao receber dano" style="width: 20px; height: 20px; cursor: not-allowed; margin: 0; opacity: 0.85;" />
               {{/each}}
             </div>
             <button type="button" class="btn-consertar-armadura"
               style="background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 4px; cursor: pointer; padding: 4px 10px; font-size: 13px; font-weight: bold;"
               title="Consertar slots de armadura"><i class="fas fa-wrench"></i> Consertar</button>
+            <button type="button" class="btn-limpar-temporarios"
+              style="background: #e3f2fd; border: 1px solid #90caf9; border-radius: 4px; cursor: pointer; padding: 4px 10px; font-size: 13px; font-weight: bold; color: #1565c0;"
+              title="Limpar marcadores temporários"><i class="fas fa-eraser"></i> Limpar Temporários</button>
           </div>
         </fieldset>
 
@@ -491,6 +494,12 @@
             <button type="button" class="action-roll"
               style="background: #1976d2; color: white; border: 1px solid #1565c0; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"><i
                 class="fas fa-dice-d10"></i> Rolagem de Ação</button>
+            <button type="button" class="trigger-work-button"
+              style="background: #285c32; color: white; border: 1px solid #1d4525; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto;"><i
+                class="fas fa-briefcase"></i> Trabalho</button>
+            <button type="button" class="trigger-acquisition-button"
+              style="background: #111; color: white; border: 1px solid #000; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto;"><i
+                class="fas fa-shopping-bag"></i> Aquisição</button>
           </div>
           <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px;">
             {{#each system.listaGatilhos as |gatilho|}}
@@ -503,6 +512,33 @@
                 <a class="delete-gatilho" title="Deletar" style="cursor: pointer; color: #d32f2f;"><i
                     class="fas fa-trash"></i></a>
               </div>
+            </li>
+            {{/each}}
+          </ul>
+        </fieldset>
+
+        <!-- PROFISSOES -->
+        <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+          <legend style="font-weight: bold; font-size: 18px; padding: 0 5px;">Profissão</legend>
+          <div style="margin-bottom: 10px; text-align: left;">
+            <button type="button" class="add-profissao"
+              style="background: #e0e0e0; border: 1px solid #999; padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; width: auto;"><i
+                class="fas fa-plus"></i> Adicionar Profissão</button>
+          </div>
+          <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px;">
+            {{#each system.listaProfissoes as |profissao|}}
+            <li class="profissao-item"
+              data-id="{{profissao.id}}"
+              style="display: flex; align-items: center; gap: 10px; background: #f9f9f9; padding: 8px 10px; border: 1px solid #ddd; border-radius: 3px;">
+              <input type="text" class="profissao-input" data-field="nome" value="{{profissao.nome}}"
+                placeholder="Nome da profissão" style="flex: 1; min-width: 0; height: 28px; padding: 0 5px; font-size: 14px;" />
+              <label style="display: flex; align-items: center; gap: 5px; margin: 0; font-size: 13px; font-weight: bold;">
+                Nível
+                <input type="number" class="profissao-input recora-native-spinner" data-field="nivel"
+                  value="{{profissao.nivel}}" min="0" step="1" style="width: 55px; height: 28px; text-align: center;" />
+              </label>
+              <a class="delete-profissao" title="Deletar profissão" aria-label="Deletar profissão"
+                style="cursor: pointer; color: #d32f2f;"><i class="fas fa-trash"></i></a>
             </li>
             {{/each}}
           </ul>

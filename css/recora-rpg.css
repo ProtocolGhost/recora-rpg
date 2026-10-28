@@ -16,6 +16,30 @@
 	pointer-events: auto;
 }
 
+.recora form .armadura-marker-list {
+	display: grid;
+	grid-template-columns: repeat(15, 20px);
+	gap: 8px;
+	align-items: center;
+	justify-content: start;
+	max-width: calc(100% - 105px);
+}
+
+.recora form .armadura-marker-normal {
+	accent-color: #607d8b;
+}
+
+.recora form .armadura-marker-temporario {
+	accent-color: #1976d2;
+}
+
+@media (max-width: 600px) {
+	.recora form .armadura-marker-list {
+		grid-template-columns: repeat(15, 18px);
+		gap: 6px;
+	}
+}
+
 .recora form .recora-sheet-tabs {
 	display: flex;
 	gap: 4px;
@@ -190,6 +214,27 @@
 	display: flex;
 	gap: 4px;
 	align-items: center;
+}
+
+.recora form .desejo-action-button {
+	width: 21%;
+	min-width: 48px;
+	margin-left: auto;
+	flex-shrink: 0;
+	padding: 4px 6px;
+	color: #fff;
+	font-family: inherit;
+	font-size: 12px;
+	font-weight: bold;
+	background: #1976d2;
+	border: 1px solid #1565c0;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.recora form .desejo-action-button:hover {
+	background: #1565c0;
+	color: #fff;
 }
 
 .recora form .desejo-marker {

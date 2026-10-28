@@ -2,7 +2,7 @@
   "id": "recora-rpg",
   "title": "Recora RPG",
   "description": "Sistema do Recora RPG.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "compatibility": {
     "minimum": "11",
     "verified": "15"

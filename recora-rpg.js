@@ -42,6 +42,16 @@ class RecoraActorSheet extends ActorSheet {
     sys.listaGatilhos = sys.listaGatilhos || [];
     sys.listaTalentos = sys.listaTalentos || [];
     sys.listaHabilidades = sys.listaHabilidades || [];
+    sys.listaProfissoes = Array.isArray(sys.listaProfissoes) ? sys.listaProfissoes : [];
+    sys.listaProfissoes = sys.listaProfissoes.map(profissao => {
+      const nivel = Number.parseInt(profissao.nivel, 10);
+      return {
+        ...profissao,
+        id: profissao.id || foundry.utils.randomID(),
+        nome: profissao.nome || "",
+        nivel: Number.isInteger(nivel) && nivel >= 0 ? nivel : 0
+      };
+    });
     sys.listaCronicas = sys.listaCronicas || [];
 
     // Novos dados de Inventário
@@ -72,15 +82,17 @@ class RecoraActorSheet extends ActorSheet {
 
     // --- Inicialização da Armadura ---
     sys.armadura = sys.armadura || {};
-    sys.armadura.valor = Number(sys.armadura.valor) || 2;
-    sys.armadura.maxMarcadores = Number(sys.armadura.maxMarcadores ?? sys.armadura.max) || 4;
-    sys.armadura.value = Number(sys.armadura.value) || 0;
+    sys.armadura.maxMarcadores = Math.max(0, Number(sys.armadura.maxMarcadores ?? sys.armadura.max) || 4);
+    sys.armadura.temporarios = Math.max(0, Number(sys.armadura.temporarios) || 0);
+    const capacidadeArmadura = sys.armadura.maxMarcadores + sys.armadura.temporarios;
+    sys.armadura.value = Math.min(capacidadeArmadura, Math.max(0, Number(sys.armadura.value) || 0));
 
-    const maxArmadura = sys.armadura.maxMarcadores;
+    const maxArmadura = sys.armadura.maxMarcadores + sys.armadura.temporarios;
     const usadosArmadura = sys.armadura.value;
 
     context.armaduraMarcadores = Array.from({ length: maxArmadura }, (_, i) => ({
-      checked: i < usadosArmadura
+      checked: i < usadosArmadura,
+      temporario: i < sys.armadura.temporarios
     }));
 
     context.system = sys;
@@ -116,6 +128,7 @@ class RecoraActorSheet extends ActorSheet {
 
     html.find('.edit-armadura-config').click(this._onEditArmaduraConfig.bind(this));
     html.find('.btn-consertar-armadura').click(this._onConsertarArmadura.bind(this));
+    html.find('.btn-limpar-temporarios').click(this._onLimparMarcadoresTemporarios.bind(this));
     // As checkboxes de armadura são apenas visuais (disabled no HTML) e são
     // preenchidas automaticamente por _onDano / _onRestaurar. Não há mais
     // listener de clique manual aqui de propósito.
@@ -135,6 +148,11 @@ class RecoraActorSheet extends ActorSheet {
     html.find('.edit-talento').click(this._onEditTalento.bind(this));
     html.find('.delete-talento').click(this._onDeleteTalento.bind(this));
     html.find('.action-roll').click(this._onActionRoll.bind(this));
+    html.find('.trigger-work-button').click(this._onWorkRoll.bind(this));
+    html.find('.trigger-acquisition-button').click(this._onAcquisitionRoll.bind(this));
+    html.find('.add-profissao').click(this._onAddProfissao.bind(this));
+    html.find('.profissao-input').change(this._onEditProfissao.bind(this));
+    html.find('.delete-profissao').click(this._onDeleteProfissao.bind(this));
 
     html.find('.add-habilidade').click(this._onAddHabilidade.bind(this));
     html.find('.edit-habilidade').click(this._onEditHabilidade.bind(this));
@@ -251,6 +269,52 @@ class RecoraActorSheet extends ActorSheet {
   // Manter restante das funções de Habilidades, Gatilhos e Rolagens inalteradas abaixo...
   // (As funções _onAddHabilidade, _onActionRoll, _onRollAttribute, etc., devem ser mantidas exatamente como estavam no seu código).
 
+  async _onAddProfissao(event) {
+    event.preventDefault();
+    const profissoes = this.actor.system.listaProfissoes || [];
+    profissoes.push({ id: foundry.utils.randomID(), nome: "", nivel: 0 });
+    await this.actor.update({ "system.listaProfissoes": profissoes });
+    this.render(false);
+  }
+
+  async _onEditProfissao(event) {
+    event.preventDefault();
+    const input = event.currentTarget;
+    const item = $(input).closest('.profissao-item');
+    const id = item.data('id');
+    const profissoes = this.actor.system.listaProfissoes || [];
+    const profissao = profissoes.find(item => item.id === id);
+    if (!profissao) return;
+
+    if (input.dataset.field === "nivel") {
+      const nivel = Number(input.value);
+      profissao.nivel = Number.isInteger(nivel) && nivel >= 0 ? nivel : 0;
+      input.value = profissao.nivel;
+    } else {
+      profissao.nome = input.value;
+    }
+
+    await this.actor.update({ "system.listaProfissoes": profissoes });
+  }
+
+  async _onDeleteProfissao(event) {
+    event.preventDefault();
+    const id = $(event.currentTarget).closest('.profissao-item').data('id');
+    const profissoes = this.actor.system.listaProfissoes || [];
+
+    Dialog.confirm({
+      title: "Deletar Profissão",
+      content: `<p style="text-align: center; font-size: 14px;">Tem certeza que deseja deletar esta profissão?</p>`,
+      yes: async () => {
+        await this.actor.update({
+          "system.listaProfissoes": profissoes.filter(profissao => profissao.id !== id)
+        });
+        this.render(false);
+      },
+      defaultYes: false
+    });
+  }
+
   async _onAddHabilidade(event) {
     event.preventDefault();
 
@@ -271,17 +335,17 @@ class RecoraActorSheet extends ActorSheet {
             <option value="impeto">Ímpeto</option>
           </select>
         </div>
-
+    
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px;">Custo de Energia:</label>
           <input type="number" id="hab-custo" value="1" style="width: 100%; text-align: center; font-size: 14px;" />
         </div>
-
+    
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px;">Descrição:</label>
           <textarea id="hab-desc" style="width: 100%; height: 80px; resize: none; font-size: 14px;"></textarea>
         </div>
-
+    
         <div id="hab-error-container"></div>
       </form>
     `;
@@ -353,17 +417,17 @@ class RecoraActorSheet extends ActorSheet {
             <option value="impeto" ${hab.atributo === 'impeto' ? 'selected' : ''}>Ímpeto</option>
           </select>
         </div>
-
+    
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px;">Custo de Energia:</label>
           <input type="number" id="hab-custo" value="${hab.custo}" style="width: 100%; text-align: center; font-size: 14px;" />
         </div>
-
+    
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px;">Descrição:</label>
           <textarea id="hab-desc" style="width: 100%; height: 80px; resize: none; font-size: 14px;">${hab.descricao}</textarea>
         </div>
-
+    
         <div id="hab-error-container"></div>
       </form>
     `;
@@ -467,6 +531,128 @@ class RecoraActorSheet extends ActorSheet {
     });
   }
 
+  async _onWorkRoll(event) {
+    event.preventDefault();
+    this._openWorkOrAcquisitionDialog(false);
+  }
+
+  async _onAcquisitionRoll(event) {
+    event.preventDefault();
+    this._openWorkOrAcquisitionDialog(true);
+  }
+
+  _openWorkOrAcquisitionDialog(isAcquisition) {
+    const profissoes = this.actor.system.listaProfissoes || [];
+    const gatilhos = this.actor.system.listaGatilhos || [];
+
+    const profissoesHtml = profissoes.length > 0
+      ? profissoes.map(profissao => `
+        <option value="${profissao.id}">${foundry.utils.escapeHTML(profissao.nome || "Profissão sem nome")}</option>
+      `).join("")
+      : '<option value="" disabled selected>Nenhuma profissão cadastrada</option>';
+
+    const gatilhosHtml = gatilhos.length > 0
+      ? gatilhos.map(gatilho => `
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+          <input type="checkbox" class="work-gatilho-check" style="cursor: pointer; width: 16px; height: 16px;" />
+          <label style="font-size: 14px;">${foundry.utils.escapeHTML(gatilho.text || "")}</label>
+        </div>
+      `).join("")
+      : "<p style='font-size: 13px; color: #666; font-style: italic;'>Nenhuma frase salva para usar.</p>";
+
+    const actionLabel = isAcquisition ? "Adquirir" : "Trabalhar";
+    const dialogTitle = isAcquisition ? "Rolagem de Aquisição" : "Rolagem de Trabalho";
+    const messageLabel = isAcquisition ? "aquisição" : "trabalho";
+    const resultLabel = isAcquisition ? "Pontos de Inventário adquiridos" : "Recursos adquiridos";
+
+    const dialogContent = `
+      <form id="work-roll-form">
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Profissão:</label>
+          <select id="work-profession" style="width: 100%; height: 30px; font-size: 14px;">
+            ${profissoesHtml}
+          </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Bônus:</label>
+          <input type="number" id="work-bonus" value="0" step="1" style="width: 80px; text-align: center; font-size: 16px;" />
+        </div>
+        
+        <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-top: 15px; margin-bottom: 10px;">
+          <legend style="font-weight: bold;">Seus Gatilhos</legend>
+          ${gatilhosHtml}
+        </fieldset>
+        <div id="work-error-container"></div>
+      </form>
+    `;
+
+    const dialog = new Dialog({
+      title: dialogTitle,
+      content: dialogContent,
+      buttons: {
+        work: {
+          icon: '<i class="fas fa-briefcase"></i>',
+          label: actionLabel,
+          callback: async html => {
+            const professionId = html.find('#work-profession').val();
+            const bonusInput = html.find('#work-bonus').val();
+            const bonus = bonusInput === "" ? 0 : Number(bonusInput);
+            const errorContainer = html.find('#work-error-container');
+            errorContainer.empty();
+
+            if (!professionId) {
+              errorContainer.html(`<p style="color: #d32f2f; font-weight: bold; text-align: center;">Cadastre uma profissão antes de ${messageLabel}.</p>`);
+              dialog.setPosition({ height: "auto" });
+              return;
+            }
+
+            if (!Number.isInteger(bonus)) {
+              errorContainer.html('<p style="color: #d32f2f; font-weight: bold; text-align: center;">O bônus deve ser um número inteiro.</p>');
+              dialog.setPosition({ height: "auto" });
+              return;
+            }
+
+            const profissao = profissoes.find(item => item.id === professionId);
+            if (!profissao) return;
+
+            const nivel = Math.max(0, Number.parseInt(profissao.nivel, 10) || 0);
+            const gatilhosMarcados = html.find('.work-gatilho-check:checked').length;
+            const quantidadeDados = Math.max(2, nivel + gatilhosMarcados + bonus);
+
+            const roll = new Roll(`${quantidadeDados}d6`);
+            await roll.evaluate({ async: true });
+
+            const resultados = roll.dice.flatMap(dado => dado.results)
+              .filter(resultado => resultado.active !== false)
+              .map(resultado => resultado.result);
+            const frequencias = resultados.reduce((contagem, resultado) => {
+              contagem[resultado] = (contagem[resultado] || 0) + 1;
+              return contagem;
+            }, {});
+            const recursosAdquiridos = Object.values(frequencias)
+              .filter(quantidade => quantidade > 1)
+              .reduce((total, quantidade) => total + quantidade, 0);
+
+            const nomePersonagem = foundry.utils.escapeHTML(this.actor.name);
+            await roll.toMessage({
+              speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+              flavor: `<div style="font-size: 15px;"><b>${nomePersonagem}</b> fez uma rolagem de ${messageLabel}!</div><div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #c7ad7c; font-weight: bold;">${resultLabel}: ${recursosAdquiridos}.</div>`
+            });
+            dialog.close();
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "Cancelar"
+        }
+      },
+      default: "work"
+    });
+
+    dialog.render(true);
+  }
+
   async _onActionRoll(event) {
     event.preventDefault();
     const sys = this.actor.system;
@@ -487,6 +673,7 @@ class RecoraActorSheet extends ActorSheet {
 
     const dialogContent = `
       <form id="action-roll-form">
+        <p style="margin: 0 0 10px; color: #666; font-size: 12px; text-align: center;">Atalho: Ctrl+A</p>
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px;">ALUCI:</label>
           <select id="action-attr" style="width: 100%; height: 30px; font-size: 14px;">
@@ -502,12 +689,12 @@ class RecoraActorSheet extends ActorSheet {
           <label style="font-weight: bold; display: block; margin-bottom: 5px;">Impulsos de Energia:</label>
           <input type="number" id="action-impulsos" value="0" style="width: 100%; text-align: center; font-size: 16px;" />
         </div>
-
+          
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px;">Vantagem e Desvantagem:</label>
           <input type="number" id="action-advantage" class="recora-native-spinner action-advantage-input" value="0" min="-2" max="2" step="1" style="width: 60px; text-align: center; font-size: 16px;" />
         </div>
-
+          
         <div id="action-error-container"></div>
         
         <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-top: 15px; margin-bottom: 10px;">
@@ -1092,13 +1279,13 @@ class RecoraActorSheet extends ActorSheet {
     d.render(true);
   }
 
-  // 1. Botão Gastar Vigor
+    // 1. Botão Gastar Vigor
   async _onGastarVigor(event) {
     event.preventDefault();
-    const vigor = this.actor.system.stats?.vigor || { value: 0, max: 10 };
 
     const dialogContent = `
       <form>
+        <p style="margin: 0 0 10px; color: #666; font-size: 12px; text-align: center;">Atalho: Ctrl+S</p>
         <div class="form-group" style="margin-bottom: 10px;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px;">Quanto de Vigor vai gastar?</label>
           <input type="number" id="gastar-vigor-val" value="1" min="0" step="1" style="width: 100%; text-align: center; font-size: 16px;" autofocus />
@@ -1129,6 +1316,11 @@ class RecoraActorSheet extends ActorSheet {
           const errorContainer = html.find('#vigor-error-container');
           errorContainer.empty();
 
+          // Lê o Vigor no momento do clique, completando o que faltar
+          const vigorSalvo = this.actor.system.stats?.vigor || {};
+          const vigorMax = Number(vigorSalvo.max) || 10;
+          const vigorAtual = Number(vigorSalvo.value ?? vigorMax);
+
           // Validação: Valor negativo
           if (isNaN(val) || val < 0) {
             errorContainer.html('<p style="color: #d32f2f; font-weight: bold; margin-top: 5px; font-size: 13px; text-align: center;">Você não pode gastar uma quantidade negativa de Vigor.</p>');
@@ -1137,15 +1329,16 @@ class RecoraActorSheet extends ActorSheet {
           }
 
           // Validação: Gastar mais do que possui
-          if (val > vigor.value) {
+          if (val > vigorAtual) {
             errorContainer.html('<p style="color: #d32f2f; font-weight: bold; margin-top: 5px; font-size: 13px; text-align: center;">Você não tem Vigor suficiente para gastar.</p>');
             d.setPosition({ height: "auto" });
             return;
           }
 
-          // Atualiza o vigor diminuindo a quantidade gasta
+          // Grava value e max juntos, para o max nunca ficar ausente
           await this.actor.update({
-            "system.stats.vigor.value": vigor.value - val
+            "system.stats.vigor.value": vigorAtual - val,
+            "system.stats.vigor.max": vigorMax
           });
           d.close();
         });
@@ -1153,7 +1346,7 @@ class RecoraActorSheet extends ActorSheet {
     });
     d.render(true);
   }
-
+  
   // 2. Botão Respiro
   async _onRespiro(event) {
     event.preventDefault();
@@ -1174,7 +1367,6 @@ class RecoraActorSheet extends ActorSheet {
       }
       updates[`system.stats.${key}.max`] = max;
     }
-
     await this.actor.update(updates);
   }
 
@@ -1320,27 +1512,42 @@ class RecoraActorSheet extends ActorSheet {
     d.render(true);
   }
 
+  async _onLimparMarcadoresTemporarios(event) {
+    event.preventDefault();
+    const armadura = this.actor.system.armadura || {};
+    const temporarios = Math.max(0, Number(armadura.temporarios) || 0);
+    const usados = Math.max(0, Number(armadura.value) || 0);
+    const temporariosMarcados = Math.min(temporarios, usados);
+
+    if (temporarios === 0) return;
+
+    await this.actor.update({
+      "system.armadura.temporarios": 0,
+      "system.armadura.value": Math.max(0, usados - temporariosMarcados)
+    });
+    this.render(false);
+  }
+
   // --- Função de Configuração de Armadura ---
   async _onEditArmaduraConfig(event) {
     event.preventDefault();
-    // Fallback campo a campo (não do objeto inteiro), para funcionar mesmo
-    // quando system.armadura já existe mas está parcialmente preenchido
-    // (ex: depois de um Restaurar, que só grava "value").
+    // Fallback campo a campo para configurações antigas ou incompletas.
     const rawArmadura = this.actor.system.armadura || {};
     const armadura = {
-      valor: Number(rawArmadura.valor) || 2,
-      maxMarcadores: Number(rawArmadura.maxMarcadores ?? rawArmadura.max) || 4
+      maxMarcadores: Math.max(0, Number(rawArmadura.maxMarcadores ?? rawArmadura.max) || 4),
+      temporarios: Math.max(0, Number(rawArmadura.temporarios) || 0)
     };
 
     const dialogContent = `
       <form>
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Valor da Armadura:</label>
-          <input type="number" id="armadura-valor" value="${armadura.valor}" min="0" step="1" style="width: 100%; text-align: center; font-size: 16px;" autofocus />
+        <p style="margin: 0 0 10px; color: #666; font-size: 12px; text-align: center;">Atalho: Ctrl+Q</p>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Marcadores normais:</label>
+          <input type="number" id="armadura-marcadores" class="recora-native-spinner" value="${armadura.maxMarcadores}" min="0" step="1" style="width: 80px; text-align: center; height: 30px; font-size: 16px; border: 1px solid #999; border-radius: 3px;" />
         </div>
         <div class="form-group" style="margin-bottom: 10px;">
-          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Quantidade de marcadores:</label>
-          <input type="number" id="armadura-marcadores" class="recora-native-spinner" value="${armadura.maxMarcadores}" min="1" max="10" step="1" onkeydown="return false;" style="width: 80px; text-align: center; height: 30px; font-size: 16px; border: 1px solid #999; border-radius: 3px;" />
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Marcadores Temporários:</label>
+          <input type="number" id="armadura-temporarios" class="recora-native-spinner" value="${armadura.temporarios}" min="0" step="1" style="width: 80px; text-align: center; height: 30px; font-size: 16px; border: 1px solid #999; border-radius: 3px;" />
         </div>
         <div id="armadura-error-container"></div>
       </form>
@@ -1359,24 +1566,20 @@ class RecoraActorSheet extends ActorSheet {
       render: html => {
         html.find('.dialog-button.save').off('click').click(async (e) => {
           e.preventDefault();
-          const valor = parseInt(html.find('#armadura-valor').val());
           const marcadores = parseInt(html.find('#armadura-marcadores').val());
+          const temporarios = parseInt(html.find('#armadura-temporarios').val());
           const errorContainer = html.find('#armadura-error-container');
           errorContainer.empty();
 
-          // Validação de número negativo
-          if (isNaN(valor) || valor < 0) {
-            errorContainer.html('<p style="color: #d32f2f; font-weight: bold; margin-top: 5px; font-size: 13px; text-align: center;">Valor da Armadura não pode ser negativo.</p>');
-            d.setPosition({ height: "auto" });
-            return;
-          }
-
-          const finalMarcadores = Math.min(10, Math.max(1, isNaN(marcadores) ? 4 : marcadores));
+          const finalMarcadores = Math.max(0, isNaN(marcadores) ? 0 : marcadores);
+          const finalTemporarios = Math.max(0, isNaN(temporarios) ? 0 : temporarios);
+          const capacidadeTotal = finalMarcadores + finalTemporarios;
+          const valorAtual = Math.min(capacidadeTotal, Math.max(0, Number(this.actor.system.armadura?.value) || 0));
 
           await this.actor.update({
-            "system.armadura.valor": valor,
             "system.armadura.maxMarcadores": finalMarcadores,
-            "system.armadura.max": finalMarcadores
+            "system.armadura.temporarios": finalTemporarios,
+            "system.armadura.value": valorAtual
           });
           d.close();
         });
@@ -1388,10 +1591,19 @@ class RecoraActorSheet extends ActorSheet {
   async _onDano(event) {
     event.preventDefault();
 
+    const armaduraAtual = this.actor.system.armadura || {};
+    const capacidadeArmadura = Math.max(0,
+      (Number(armaduraAtual.maxMarcadores ?? armaduraAtual.max) || 4) +
+      (Number(armaduraAtual.temporarios) || 0)
+    );
+    const marcadoresUsados = Math.max(0, Number(armaduraAtual.value) || 0);
+    const slotsDisponiveis = Math.max(0, capacidadeArmadura - marcadoresUsados);
+
     new Dialog({
       title: "Receber Dano",
       content: `
       <form style="padding: 10px;">
+        <p style="margin: 0 0 10px; color: #666; font-size: 12px; text-align: center;">Atalho: Ctrl+D</p>
         <div style="margin-bottom: 15px; text-align: center;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #333;">
             Dano a receber:
@@ -1407,7 +1619,7 @@ class RecoraActorSheet extends ActorSheet {
             autofocus
           />
         </div>
-
+            
         <div style="margin-bottom: 15px; text-align: center;">
           <label style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #333;">
             Slots de Armadura:
@@ -1418,7 +1630,7 @@ class RecoraActorSheet extends ActorSheet {
             class="recora-native-spinner" 
             value="0" 
             min="0" 
-            max="10" 
+            max="${slotsDisponiveis}"
             step="1" 
             onkeydown="return false" 
             style="width: 80px; text-align: center; font-weight: bold; font-size: 16px; border: 1px solid #ccc; border-radius: 3px; height: 32px; box-sizing: border-box; cursor: pointer; display: inline-block;" 
@@ -1441,22 +1653,27 @@ class RecoraActorSheet extends ActorSheet {
               return;
             }
 
+            if (slotsGastos < 0) {
+              ui.notifications.error("A quantidade de slots não pode ser menor que zero.");
+              return;
+            }
+
             // Busca segura dos dados da Armadura
             const armadura = this.actor.system.armadura || {};
-            const marcadoresMax = Number(armadura.maxMarcadores ?? armadura.max) || 4;
-            const marcadoresUsados = Number(armadura.value) || 0;
-            const slotsDisponiveis = Math.max(0, marcadoresMax - marcadoresUsados);
+            const marcadoresMax = Math.max(0, Number(armadura.maxMarcadores ?? armadura.max) || 4);
+            const marcadoresTemporarios = Math.max(0, Number(armadura.temporarios) || 0);
+            const capacidadeTotal = marcadoresMax + marcadoresTemporarios;
+            const marcadoresUsados = Math.min(capacidadeTotal, Math.max(0, Number(armadura.value) || 0));
+            const slotsDisponiveisAtuais = Math.max(0, capacidadeTotal - marcadoresUsados);
 
             // 2. Validação: Tentar gastar mais slots do que os livres
-            if (slotsGastos > slotsDisponiveis) {
+            if (slotsGastos > slotsDisponiveisAtuais) {
               ui.notifications.error("Você não tem slots de armadura suficientes.");
               return;
             }
 
-            // 3. Cálculo de absorção e dano líquido
-            const valorArmadura = Number(this.actor.system.armadura?.valor) || 2;
-            const danoAbsorvido = valorArmadura * slotsGastos;
-            let danoLiquido = Math.max(0, danoAReceber - danoAbsorvido);
+            // Cada slot marcado reduz um ponto de dano.
+            let danoLiquido = Math.max(0, danoAReceber - slotsGastos);
 
             // Atualiza quantidade total de marcadores gastos
             const novosUsados = marcadoresUsados + slotsGastos;
@@ -2057,4 +2274,31 @@ Hooks.once("init", () => {
   Actors.unregisterSheet("core", ActorSheet);
   Actors.registerSheet("recora-rpg", RecoraActorSheet, { types: ["character"], makeDefault: true });
   Actors.registerSheet("recora-rpg", RecoraNPCSheet, { types: ["npc"], makeDefault: true });
+
+  window.addEventListener("keydown", event => {
+    if (!event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) return;
+    const shortcutKey = event.key.toLowerCase();
+    if (!["a", "s", "d", "f", "q"].includes(shortcutKey)) return;
+
+    const target = event.target;
+    if (target.matches?.("input, textarea, select, [contenteditable='true']")) return;
+
+    const controlledTokens = canvas?.tokens?.controlled || [];
+    if (controlledTokens.length !== 1 || controlledTokens[0].actor?.type !== "character") return;
+
+    const actor = controlledTokens[0].actor;
+    let sheet = Object.values(actor.apps || {}).find(app => app instanceof RecoraActorSheet);
+    if (!sheet) sheet = actor.sheet;
+    if (!(sheet instanceof RecoraActorSheet)) return;
+
+    event.preventDefault();
+    const shortcutHandlers = {
+      a: "_onActionRoll",
+      s: "_onGastarVigor",
+      d: "_onDano",
+      f: "_onRespiro",
+      q: "_onEditArmaduraConfig"
+    };
+    sheet[shortcutHandlers[shortcutKey]]({ preventDefault: () => { }, fromShortcut: true });
+  });
 });
